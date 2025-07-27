@@ -1,28 +1,31 @@
+<div align="center">
+
 # Unix System Interface
 
 ##### This document is made according to Marina's computer architecture course
 
-_This document was made by me (Yarden)_
+<em>This document was made by me (Yarden)</em>
 
 ---
 
-## Project Overview
+<div align="left">
 
-This is a web-based documentation project about the Unix System Interface, created as part of Marina's computer architecture course.
+<p><small>This is very small text</small></p>
+<span><small>Small inline text</small></span>
 
-## Files
+</div>
 
-- `index.html` - Main HTML page
-- `styles.css` - Stylesheet for the page
-- `README.md` - This documentation file
+</div>
 
-## How to View
+---
+
+## View the Project
 
 1. Open the project in VS Code
 2. Use the Live Server extension or open `index.html` in a browser
 3. The page will display the Unix System Interface documentation
 
-## HTML Source Code
+## Source Code
 
 ```html
 <!DOCTYPE html>
