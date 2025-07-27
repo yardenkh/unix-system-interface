@@ -38,16 +38,9 @@
 
         <h3>File Descriptor Table</h3>
         <p>
-          In Unix systems, each process maintains a
-          <strong>file descriptor table</strong> that gives every process its
-          unique identity and access controls. This table manages how processes
-          interact with files and I/O streams.
-          <strong
-            >The file descriptor (fd) serves as the unique ID for each
-            process</strong
-          >
-          - it's how the operating system identifies and tracks which process is
-          accessing which resources.
+          Each process maintains a <strong>file descriptor table</strong> with
+          unique integer IDs (0, 1, 2, 3...) that track file access and
+          permissions.
         </p>
 
         <div class="table-container">
@@ -98,77 +91,155 @@
           <h4>Key Components:</h4>
           <ul>
             <li>
-              <strong>File Descriptor (fd):</strong> A unique integer identifier
-              (0, 1, 2, 3, ...) that acts as the <em>process ID</em> - this is
-              how the OS knows which process is making the request
+              <strong>fd:</strong> Unique process identifier (0, 1, 2, 3...)
             </li>
-            <li>
-              <strong>Flags:</strong> Access permissions (R=Read, W=Write,
-              A=Append)
-            </li>
-            <li>
-              <strong>File Stream:</strong> The actual data stream the process
-              can manipulate
-            </li>
+            <li><strong>Flags:</strong> Access permissions (R/W/A)</li>
+            <li><strong>Stream:</strong> Data flow the process manipulates</li>
           </ul>
         </div>
 
-        <h3>File I/O Operations</h3>
-        <p>
-          Unix systems provide powerful file manipulation capabilities through
-          standard library functions. Let's examine a simple example that
-          demonstrates how to create, write to, and close a file:
-        </p>
+        <h3>System Call Functions</h3>
+        <p>Here are three essential Unix system calls for file manipulation:</p>
+
+        <div class="info-box">
+          <h4>Why These Functions Matter:</h4>
+          <p>
+            These are <strong>low-level system calls</strong> that directly
+            communicate with the operating system kernel. Unlike high-level
+            functions like <code>fopen()</code> or <code>fwrite()</code>, these
+            give you precise control over file operations and are the foundation
+            that all other file functions are built upon.
+          </p>
+        </div>
 
         <!-- prettier-ignore -->
         <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;fcntl.h&gt;</span>
+<span class="c-preprocessor">#include &lt;string.h&gt;</span>
 <span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+
+<span class="c-keyword">void</span> <span class="c-function">demo_open</span>() {
+    <span class="c-comment">// open() - Create/open file with permissions</span>
+    <span class="c-comment">// O_RDWR = read+write access, O_CREAT = create if not exists</span>
+    <span class="c-comment">// 0644 = owner read/write, group/others read-only</span>
+    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_RDWR | O_CREAT, <span class="c-number">0644</span>);
+    <span class="c-function">printf</span>(<span class="c-string">"File descriptor: %d\n"</span>, fd);
+    <span class="c-function">close</span>(fd);
+}
+
+<span class="c-keyword">void</span> <span class="c-function">demo_write</span>() {
+    <span class="c-comment">// write() - Write data to file descriptor</span>
+    <span class="c-comment">// O_WRONLY = write-only access</span>
+    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_WRONLY);
+    <span class="c-keyword">int</span> bytes = <span class="c-function">write</span>(fd, <span class="c-string">"Hello World\n"</span>, <span class="c-number">12</span>);
+    <span class="c-function">printf</span>(<span class="c-string">"Wrote %d bytes\n"</span>, bytes);
+    <span class="c-function">close</span>(fd);
+}
+
+<span class="c-keyword">void</span> <span class="c-function">demo_lseek</span>() {
+    <span class="c-comment">// lseek() - Move file pointer position</span>
+    <span class="c-comment">// O_RDWR = read+write access</span>
+    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_RDWR);
+    <span class="c-keyword">off_t</span> pos = <span class="c-function">lseek</span>(fd, <span class="c-number">6</span>, SEEK_SET);
+    <span class="c-function">write</span>(fd, <span class="c-string">"Unix"</span>, <span class="c-number">4</span>);
+    <span class="c-function">printf</span>(<span class="c-string">"Moved to position: %ld\n"</span>, pos);
+    <span class="c-function">close</span>(fd);
+}
+
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
-    <span class="c-type">FILE</span>* fd = <span class="c-function">fopen</span>(<span class="c-string">"a.txt"</span>, <span class="c-string">"w+"</span>);
-    <span class="c-function">fprintf</span>(fd, <span class="c-string">"print to a.txt\n"</span>);
-    <span class="c-function">fclose</span>(fd);
+    <span class="c-function">demo_open</span>();
+    <span class="c-function">demo_write</span>();
+    <span class="c-function">demo_lseek</span>();
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
 }</div>
         <!-- prettier-ignore-end -->
 
+        <div class="info-box">
+          <h4>System Call Functions:</h4>
+          <ul>
+            <li>
+              <strong>open()</strong> - Creates/opens file, returns file
+              descriptor
+            </li>
+            <li><strong>write()</strong> - Writes data to file descriptor</li>
+            <li><strong>lseek()</strong> - Changes file pointer position</li>
+          </ul>
+        </div>
+
         <div class="explanation-box">
-          <h4>How File I/O Works:</h4>
+          <h4>What Actually Happens:</h4>
           <ol>
             <li>
-              <strong>File Opening:</strong> <code>fopen()</code> creates a file
-              pointer and opens "a.txt" in write mode ("w+")
+              <strong>demo_open()</strong> - Creates "demo.txt" and gets file
+              descriptor 3 (first available after 0,1,2)
             </li>
             <li>
-              <strong>Writing Data:</strong> <code>fprintf()</code> writes
-              formatted text to the file
+              <strong>demo_write()</strong> - Reopens file and writes "Hello
+              World\n" at the beginning
             </li>
             <li>
-              <strong>File Closing:</strong> <code>fclose()</code> properly
-              closes the file and flushes any remaining data
-            </li>
-            <li>
-              <strong>File Descriptor:</strong> Behind the scenes, this creates
-              a new entry in the file descriptor table (likely fd=3) -
-              <em
-                >this fd number becomes the unique process ID for this file
-                operation</em
-              >
+              <strong>demo_lseek()</strong> - Reopens file, moves to position 6
+              (after "Hello "), then overwrites "World" with "Unix"
             </li>
           </ol>
           <p>
+            <em>Result: File contains "Hello Unix" instead of "Hello World"</em>
+          </p>
+        </div>
+
+        <div class="explanation-box">
+          <h4>lseek() Arguments & When to Use:</h4>
+          <ul>
+            <li>
+              <strong>SEEK_SET</strong> - From beginning of file (absolute
+              position)
+            </li>
+            <li>
+              <strong>SEEK_CUR</strong> - From current position (relative move)
+            </li>
+            <li>
+              <strong>SEEK_END</strong> - From end of file (append or read
+              backwards)
+            </li>
+          </ul>
+          <p>
             <em
-              >This example shows how high-level C library functions interact
-              with the Unix file system through file descriptors. Notice how the
-              variable is named 'fd' - this represents the file descriptor
-              number that acts as the process identifier in the system's file
-              descriptor table.</em
+              >lseek(fd, 6, SEEK_SET) moves to byte 6 from start - useful for
+              editing specific parts of files without rewriting everything</em
             >
           </p>
         </div>
 
-        <h3>Terminal Example</h3>
-        <p>
-          Here's how you would compile and run this program in a Unix terminal:
-        </p>
+        <div class="info-box">
+          <h4>Why close() is Essential:</h4>
+          <p>The <code>close()</code> function is crucial because:</p>
+          <ul>
+            <li>
+              <strong>Flushes data</strong> - Ensures all written data is
+              actually saved to disk
+            </li>
+            <li>
+              <strong>Frees resources</strong> - Releases the file descriptor
+              for other processes to use
+            </li>
+            <li>
+              <strong>Prevents memory leaks</strong> - OS has limited file
+              descriptors (usually ~1024 per process)
+            </li>
+            <li>
+              <strong>Unlocks files</strong> - Allows other programs to access
+              the file
+            </li>
+          </ul>
+          <p>
+            <em
+              >Without close(), your data might not be saved and you could run
+              out of file descriptors!</em
+            >
+          </p>
+        </div>
+
+        <div>here's how it looks in the terminal:</div>
 
         <div class="terminal-window">
           <div class="terminal-header">
@@ -181,23 +252,1658 @@
           </div>
           <div class="terminal-content">
             <div class="terminal-line">
-              <span class="terminal-prompt">marina@vm:~/SPLab $</span>
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
               <span class="terminal-command">gcc main.c</span>
             </div>
             <div class="terminal-line">
-              <span class="terminal-prompt">marina@vm:~/SPLab $</span>
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
               <span class="terminal-command">./a.out</span>
             </div>
+            <div class="terminal-output">File descriptor: 3</div>
+            <div class="terminal-output">Wrote 12 bytes</div>
+            <div class="terminal-output">Moved to position: 6</div>
             <div class="terminal-line">
-              <span class="terminal-prompt">marina@vm:~/ SPLab $</span>
-              <span class="terminal-command">cat a.txt</span>
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command">cat demo.txt</span>
             </div>
-            <div class="terminal-output">print to a.txt</div>
+            <div class="terminal-output">Hello Unix</div>
             <div class="terminal-line">
-              <span class="terminal-prompt">marina@vm:~/ SPLab $</span>
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
               <span class="terminal-cursor">█</span>
             </div>
           </div>
+        </div>
+
+        <h2>System Calls</h2>
+        <p>
+          Understanding how high-level C functions translate to kernel system
+          calls:
+        </p>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">char</span> str[] = <span class="c-string">"Hi"</span>;
+
+    <span class="c-type">FILE</span>* fp = <span class="c-function">fopen</span>(<span class="c-string">"a.txt"</span>, <span class="c-string">"w"</span>);
+    <span class="c-function">fwrite</span>(str, <span class="c-number">1</span>, <span class="c-function">sizeof</span>(str), fp);
+    <span class="c-function">fclose</span>(fp);
+
+    <span class="c-keyword">return</span>(<span class="c-number">0</span>);
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>How System Calls Work - Step by Step:</h4>
+            <ol>
+              <li>
+                <strong>fwrite()</strong> - High-level C library function that
+                you call in your program
+              </li>
+              <li>
+                <strong>Wrapper Function</strong> - fwrite() internally calls
+                the lower-level write() function
+              </li>
+              <li>
+                <strong>System Call Setup</strong> - write() loads arguments
+                into CPU registers and executes "syscall" assembly instruction
+              </li>
+              <li>
+                <strong>Kernel Mode Switch</strong> - CPU switches from user
+                mode to kernel mode for security
+              </li>
+              <li>
+                <strong>System Call Table</strong> - CPU uses system call ID (in
+                rax register) to find the correct kernel function
+              </li>
+              <li>
+                <strong>Kernel Execution</strong> - sys_write() kernel routine
+                actually writes data to the file
+              </li>
+            </ol>
+            <p>
+              <em
+                >This multi-layer approach provides both convenience (high-level
+                functions) and security (kernel controls hardware access)</em
+              >
+            </p>
+          </div>
+
+          <div class="system-call-diagram">
+            <div class="user-layer">👤 User Program</div>
+            <div class="flow-step">↓ fwrite("Hi", 1, 3, fp)</div>
+            <div class="user-layer">📚 C Library (glibc)</div>
+            <div class="flow-step">↓ write() wrapper</div>
+
+            <div class="boundary">
+              🚧 USER / KERNEL 🚧<br />
+              <span class="boundary-text">BOUNDARY</span>
+            </div>
+
+            <div class="flow-step">↓ syscall instruction</div>
+            <div class="kernel-layer">🗂️ System Call Table</div>
+            <div class="flow-step">↓ sys_write() lookup</div>
+            <div class="kernel-layer">⚙️ Kernel Routine</div>
+            <div class="flow-step">↓ Actual file writing</div>
+            <div class="kernel-layer">💾 Hardware (Disk)</div>
+          </div>
+        </div>
+
+        <h2>sys_read</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <p><strong>system call number (in rax):</strong> 0</p>
+
+            <h4>arguments:</h4>
+            <ul class="sys-call-args">
+              <li><strong>rdi:</strong> file descriptor (to read from it)</li>
+              <li>
+                <strong>rsi:</strong> pointer to buffer (to keep a read data
+                into it)
+              </li>
+              <li>
+                <strong>rdx:</strong> maximal number of bytes to read (maximal
+                buffer size)
+              </li>
+            </ul>
+
+            <h4>return value (in rax):</h4>
+            <ul class="sys-call-args">
+              <li>number of bytes received</li>
+              <li class="error-text">On errors: negative number</li>
+            </ul>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">section .bss</div>
+            <div class="asm-indent asm-data">buffer: .space 1</div>
+            <br />
+            <div class="asm-section">.section .text</div>
+            <div class="asm-indent asm-label">global _start</div>
+            <div class="asm-label">_start:</div>
+            <br />
+            <div class="asm-indent asm-instruction">
+              movq $0, %rax
+              <span class="asm-comment"># system call number (sys_read)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdi
+              <span class="asm-comment"># file descriptor (stdin)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq buffer(%rip), %rsi
+              <span class="asm-comment"># buffer to keep the read data</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rdx <span class="asm-comment"># bytes to read</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <br />
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># system call number (sys_exit)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdi <span class="asm-comment"># exit status</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>sys_write</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <p><strong>system call number (in rax):</strong> 1</p>
+
+            <h4>arguments:</h4>
+            <ul class="sys-call-args">
+              <li><strong>rdi:</strong> file descriptor (to write to it)</li>
+              <li><strong>rsi:</strong> pointer to buffer (data to write)</li>
+              <li><strong>rdx:</strong> number of bytes to write</li>
+            </ul>
+
+            <h4>return value (in rax):</h4>
+            <ul class="sys-call-args">
+              <li>number of bytes written</li>
+              <li class="error-text">On errors: negative number</li>
+            </ul>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">section .data</div>
+            <div class="asm-indent asm-data">
+              msg: .ascii "Hello\n"
+              <span class="asm-comment"># string to print</span>
+            </div>
+            <div class="asm-indent asm-data">
+              len = . - msg <span class="asm-comment"># length of string</span>
+            </div>
+            <br />
+            <div class="asm-section">.section .text</div>
+            <div class="asm-indent asm-label">global _start</div>
+            <div class="asm-label">_start:</div>
+            <br />
+            <div class="asm-indent asm-instruction">
+              movq $1, %rax
+              <span class="asm-comment"># system call number (sys_write)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rdi
+              <span class="asm-comment"># file descriptor (stdout)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq msg(%rip), %rsi
+              <span class="asm-comment"># message to write</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $len, %rdx <span class="asm-comment"># message length</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <br />
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># system call number (sys_exit)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdi <span class="asm-comment"># exit status</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>assembly code to print positive int</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>What this code does:</h4>
+            <p>
+              Converts the integer <strong>234</strong> to its ASCII string
+              representation and prints it to stdout.
+            </p>
+
+            <h4>Key techniques:</h4>
+            <ul class="sys-call-args disc-list">
+              <li>
+                <strong>Backward string building</strong> - Builds the string
+                from right to left
+              </li>
+              <li>
+                <strong>Division by 10</strong> - Extracts digits one by one
+              </li>
+              <li>
+                <strong>ASCII conversion</strong> - Adds '0' (48) to convert
+                digit to ASCII
+              </li>
+              <li>
+                <strong>Dynamic length</strong> - Calculates string length
+                during conversion
+              </li>
+            </ul>
+
+            <h4>Register usage:</h4>
+            <ul class="sys-call-args disc-list">
+              <li>
+                <strong>%rax</strong> - Holds the number being converted
+                (quotient after division)
+              </li>
+              <li>
+                <strong>%rdx</strong> - Contains remainder after division
+                (current digit)
+              </li>
+              <li>
+                <strong>%rcx</strong> - Holds divisor (10) for division
+                operation
+              </li>
+              <li>
+                <strong>%rdi</strong> - Buffer pointer, moves backward as digits
+                are stored
+              </li>
+              <li>
+                <strong>%rsi</strong> - Points to start of converted string for
+                sys_write
+              </li>
+            </ul>
+
+            <h4>Algorithm:</h4>
+            <ol>
+              <li>Load number (234) into %rax register</li>
+              <li>Point %rdi to end of buffer</li>
+              <li>Divide %rax by 10, get remainder in %rdx (last digit)</li>
+              <li>Convert digit in %rdx to ASCII and store at (%rdi)</li>
+              <li>Repeat until %rax becomes 0</li>
+              <li>Print using %rsi pointer to start of digits</li>
+            </ol>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">.section .data</div>
+            <div class="asm-indent asm-data">
+              x: .long 234 <span class="asm-comment"># Define the number</span>
+            </div>
+            <div class="asm-indent asm-data">
+              buflen: .long 0
+              <span class="asm-comment"># Length of the converted string</span>
+            </div>
+            <div class="asm-section">.section .bss</div>
+            <div class="asm-indent asm-data">
+              buffer: .space 10
+              <span class="asm-comment"
+                ># Buffer to store the ASCII representation</span
+              >
+            </div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"
+                ># 10 bytes are for digits (according to maximum int
+                value)</span
+              >
+            </div>
+            <br />
+            <div class="asm-section">.section .text</div>
+            <div class="asm-label">.global _start</div>
+            <div class="asm-label">_start:</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Load the number into rax</span>
+            </div>
+            <div class="asm-indent asm-instruction">xorq %rax, %rax</div>
+            <div class="asm-indent asm-instruction">movl x, %eax</div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"
+                ># Point rdi to end of buffer (we'll build string
+                backwards)</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">leaq buffer, %rdi</div>
+            <div class="asm-indent asm-instruction">
+              addq $10, %rdi
+              <span class="asm-comment"># Point to end of buffer</span>
+            </div>
+            <div class="asm-label">convert_loop:</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Divide by 10 to get last digit</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdx
+              <span class="asm-comment"># Clear rdx for division</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $10, %rcx <span class="asm-comment"># Divisor</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              divq %rcx <span class="asm-comment"># Divide rax by 10</span>
+            </div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"
+                ># Convert remainder to ASCII and store</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">
+              addq $'0', %rdx
+              <span class="asm-comment"># Convert to ASCII</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              decq %rdi
+              <span class="asm-comment"># Move buffer pointer back</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movb %dl, (%rdi) <span class="asm-comment"># Store digit</span>
+            </div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Increment length</span>
+            </div>
+            <div class="asm-indent asm-instruction">incl buflen</div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"
+                ># Continue if quotient is not zero</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">testq %rax, %rax</div>
+            <div class="asm-indent asm-instruction">jnz convert_loop</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Write the number to stdout</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rax
+              <span class="asm-comment"># sys_write system call number</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq %rdi, %rsi
+              <span class="asm-comment"># Pointer to start of digits</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rdi
+              <span class="asm-comment"># File descriptor 1 (stdout)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq buflen, %rdx
+              <span class="asm-comment"># Length of string</span>
+            </div>
+            <div class="asm-indent asm-syscall">syscall</div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Exit program</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># sys_exit system call number</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdi <span class="asm-comment"># Exit status 0</span>
+            </div>
+            <div class="asm-indent asm-syscall">syscall</div>
+          </div>
+        </div>
+
+        <h2>print section text byte by byte</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>What this code does:</h4>
+            <p>
+              Prints each byte of the <strong>.text section</strong> (the
+              executable code) one by one to stdout.
+            </p>
+
+            <h4>Key concepts:</h4>
+            <ul class="sys-call-args disc-list">
+              <li>
+                <strong>Section boundaries</strong> - Uses labels to mark start
+                and end of .text section
+              </li>
+              <li>
+                <strong>Byte-by-byte iteration</strong> - Loops through each
+                byte in the section
+              </li>
+              <li>
+                <strong>Pointer arithmetic</strong> - Increments memory address
+                to access next byte
+              </li>
+              <li>
+                <strong>Memory inspection</strong> - Reads and displays raw
+                executable code
+              </li>
+            </ul>
+
+            <h4>Register usage:</h4>
+            <ul class="sys-call-args disc-list">
+              <li>
+                <strong>%rcx</strong> - Current byte pointer, starts at label1
+                (section start)
+              </li>
+              <li><strong>%rax</strong> - System call number for sys_write</li>
+              <li><strong>%rdi</strong> - File descriptor (stdout = 1)</li>
+              <li><strong>%rsi</strong> - Pointer to current byte to print</li>
+              <li>
+                <strong>%rdx</strong> - Number of bytes to write (always 1)
+              </li>
+            </ul>
+
+            <h4>Algorithm:</h4>
+            <ol>
+              <li>Set %rcx to label1 (start of .text section)</li>
+              <li>Print the byte at address %rcx</li>
+              <li>Increment %rcx to point to next byte</li>
+              <li>Check if %rcx reached label2 (end of section)</li>
+              <li>If not at end, repeat from step 2</li>
+              <li>Exit when entire section is printed</li>
+            </ol>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">.section .text</div>
+            <div class="asm-label">.global _start</div>
+            <div class="asm-label">label1:</div>
+            <div class="asm-label">_start:</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"
+                ># Load start address of .text section</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq label1(%rip), %rcx
+            </div>
+            <br />
+            <div class="asm-label">print_loop:</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Check if we reached the end</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq label2(%rip), %rax
+            </div>
+            <div class="asm-indent asm-instruction">cmpq %rax, %rcx</div>
+            <div class="asm-indent asm-instruction">jge exit_program</div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Print current byte</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rax
+              <span class="asm-comment"># sys_write system call number</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rdi
+              <span class="asm-comment"># file descriptor (stdout)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq %rcx, %rsi
+              <span class="asm-comment"># pointer to current byte</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $1, %rdx <span class="asm-comment"># print 1 byte</span>
+            </div>
+            <div class="asm-indent asm-syscall">syscall</div>
+            <br />
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Move to next byte</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              incq %rcx <span class="asm-comment"># increment pointer</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              jmp print_loop <span class="asm-comment"># continue loop</span>
+            </div>
+            <br />
+            <div class="asm-label">exit_program:</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># Exit program</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># sys_exit system call number</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdi <span class="asm-comment"># exit status 0</span>
+            </div>
+            <div class="asm-indent asm-syscall">syscall</div>
+            <br />
+            <div class="asm-label">label2:</div>
+            <div class="asm-indent asm-comment">
+              <span class="asm-comment"># End of .text section marker</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>sys_open</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <p><strong>system call number (in rax):</strong> 2</p>
+
+            <h4>arguments:</h4>
+            <ul class="sys-call-args">
+              <li><strong>rdi:</strong> pathname of the file to open/create</li>
+              <li>
+                <strong>rsi:</strong> file access bits (bitwise OR'ed together)
+                <ul class="nested-list">
+                  <li>O_RDONLY (0) - read only</li>
+                  <li>O_WRONLY (1) - write only</li>
+                  <li>O_RDRW (2) - read and write</li>
+                  <li>O_APPEND (1024) - append to end</li>
+                  <li>O_TRUNC (512) - truncate existing content</li>
+                  <li>O_CREAT (64) - create if doesn't exist</li>
+                </ul>
+              </li>
+              <li>
+                <strong>rdx:</strong> file permissions (when O_CREAT is set)
+                <ul class="nested-list">
+                  <li>S_IRWXU (0700) - RWX mask for owner</li>
+                  <li>S_IRUSR (0400) - Read for owner</li>
+                  <li>S_IWUSR (0200) - Write for owner</li>
+                  <li>S_IXUSR (0100) - Execute for owner</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h4>return value (in rax):</h4>
+            <ul class="sys-call-args">
+              <li>file descriptor (positive integer)</li>
+              <li class="error-text">On errors: negative number</li>
+            </ul>
+
+            <h4>Example breakdown:</h4>
+            <p class="example-breakdown">
+              <strong>$66 = O_RDWR | O_CREAT</strong> (2 + 64)<br />
+              <strong>$0700 = S_IRWXU</strong> (owner: read/write/execute)
+            </p>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">.section .data</div>
+            <div class="asm-indent asm-data">
+              fileName: .string "file.txt"
+              <span class="asm-comment"># file name</span>
+            </div>
+            <div class="asm-indent asm-data">
+              fd: .quad 0 <span class="asm-comment"># file descriptor</span>
+            </div>
+            <br />
+            <div class="asm-section">.section .text</div>
+            <div class="asm-indent asm-label">global main</div>
+            <div class="asm-label">main:</div>
+            <br />
+            <div class="asm-indent asm-instruction">
+              movq $2, %rax
+              <span class="asm-comment"># system call number (sys_open)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq fileName(%rip), %rdi
+              <span class="asm-comment"># set file name</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $66, %rsi
+              <span class="asm-comment"
+                ># flags: O_RDWR|O_CREAT (read+write, create if needed)</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0700, %rdx
+              <span class="asm-comment"
+                ># permissions: S_IRWXU (owner read+write+execute)</span
+              >
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq %rax, fd(%rip)
+              <span class="asm-comment"># save file descriptor</span>
+            </div>
+            <br />
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># system call number (sys_exit)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdi <span class="asm-comment"># exit status</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>sys_close</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <p><strong>system call number (in rax):</strong> 3</p>
+
+            <h4>arguments:</h4>
+            <ul class="sys-call-args">
+              <li>
+                <strong>rdi:</strong> file descriptor (obtained from sys_open)
+              </li>
+            </ul>
+
+            <h4>return value (in rax):</h4>
+            <ul class="sys-call-args">
+              <li>0 on success</li>
+              <li class="error-text">On errors: negative number</li>
+            </ul>
+
+            <h4>What sys_close does:</h4>
+            <ul class="sys-call-args disc-list">
+              <li>
+                <strong>Releases file descriptor</strong> - Makes it available
+                for reuse
+              </li>
+              <li>
+                <strong>Flushes buffers</strong> - Ensures all data is written
+                to disk
+              </li>
+              <li>
+                <strong>Frees kernel resources</strong> - Cleans up internal
+                file structures
+              </li>
+              <li>
+                <strong>Prevents resource leaks</strong> - Essential for
+                long-running programs
+              </li>
+            </ul>
+
+            <h4>Example workflow:</h4>
+            <ol class="example-workflow">
+              <li>
+                <strong>file_open:</strong> Opens "file.txt" with O_RDONLY
+              </li>
+              <li>
+                <strong>file_close:</strong> Closes the file using saved
+                descriptor
+              </li>
+              <li><strong>exit_program:</strong> Clean program termination</li>
+            </ol>
+
+            <h4>Important notes:</h4>
+            <p class="important-notes">
+              Always close files when done! Process has limited file descriptors
+              (~1024).
+              <br /><strong>xorq %rdx, %rdx</strong> efficiently sets %rdx to 0.
+            </p>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">.section .data</div>
+            <div class="asm-indent asm-data">
+              fileName: .string "file.txt"
+              <span class="asm-comment"># file name</span>
+            </div>
+            <div class="asm-indent asm-data">
+              fd: .quad 0 <span class="asm-comment"># file descriptor</span>
+            </div>
+            <br />
+            <div class="asm-section">.section .text</div>
+            <div class="asm-indent asm-label">global main</div>
+            <div class="asm-label">main:</div>
+            <br />
+            <div class="asm-label">file_open:</div>
+            <div class="asm-indent asm-instruction">
+              movq $2, %rax
+              <span class="asm-comment"># system call number (sys_open)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq fileName(%rip), %rdi
+              <span class="asm-comment"># set file name</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rsi
+              <span class="asm-comment"
+                ># flags: O_RDONLY (read-only access)</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">
+              xorq %rdx, %rdx
+              <span class="asm-comment"
+                ># permissions: not needed for O_RDONLY (read-only)</span
+              >
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq %rax, fd(%rip)
+              <span class="asm-comment"># save file descriptor</span>
+            </div>
+            <br />
+            <div class="asm-label">file_close:</div>
+            <div class="asm-indent asm-instruction">
+              movq $3, %rax
+              <span class="asm-comment"># system call number (sys_close)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq fd(%rip), %rdi
+              <span class="asm-comment"># file descriptor</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <br />
+            <div class="asm-label">exit_program:</div>
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># system call number (sys_exit)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              xorq %rdi, %rdi <span class="asm-comment"># exit status 0</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>sys_lseek</h2>
+        <div class="side-by-side">
+          <div class="left-content">
+            <p><strong>system call number (in rax):</strong> 8</p>
+
+            <h4>arguments:</h4>
+            <ul class="sys-call-args">
+              <li><strong>rdi:</strong> file descriptor</li>
+              <li><strong>rsi:</strong> offset (number of bytes to move)</li>
+              <li>
+                <strong>rdx:</strong> where to move from
+                <ul class="nested-list">
+                  <li>SEEK_SET (0) - beginning of the file</li>
+                  <li>SEEK_CUR (1) - current position of the file pointer</li>
+                  <li>SEEK_END (2) - end of file</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h4>return value (in rax):</h4>
+            <ul class="sys-call-args">
+              <li>Current position of the file pointer</li>
+              <li class="error-text">On errors: negative number</li>
+            </ul>
+
+            <h4>What sys_lseek does:</h4>
+            <ul class="sys-call-args disc-list">
+              <li>
+                <strong>Repositions file pointer</strong> - Changes where next
+                read/write will occur
+              </li>
+              <li>
+                <strong>Non-destructive operation</strong> - Doesn't modify file
+                content, only pointer position
+              </li>
+              <li>
+                <strong>Enables random access</strong> - Jump to any position in
+                file without reading sequentially
+              </li>
+              <li>
+                <strong>Essential for file editing</strong> - Allows overwriting
+                specific parts of files
+              </li>
+            </ul>
+
+            <h4>Example workflow:</h4>
+            <ol class="example-workflow">
+              <li>
+                <strong>file_open:</strong> Opens "file.txt" with O_RDONLY
+                (read-only)
+              </li>
+              <li>
+                <strong>file_lseek:</strong> Moves file pointer 15 bytes from
+                beginning (SEEK_SET)
+              </li>
+              <li><strong>exit_program:</strong> Clean program termination</li>
+            </ol>
+
+            <h4>Important notes:</h4>
+            <p class="important-notes">
+              <strong>SEEK_SET (0)</strong> = absolute positioning from file
+              start.<br />
+              <strong>SEEK_CUR (1)</strong> = relative positioning from current
+              location.<br />
+              <strong>SEEK_END (2)</strong> = positioning relative to file
+              end.<br />
+              Moving beyond file end with write operations extends the file.
+            </p>
+          </div>
+
+          <div class="asm-codeblock">
+            <div class="asm-section">.section .data</div>
+            <div class="asm-indent asm-data">
+              fileName: .string "file.txt"
+              <span class="asm-comment"># file name</span>
+            </div>
+            <div class="asm-indent asm-data">
+              fd: .quad 0 <span class="asm-comment"># file descriptor</span>
+            </div>
+            <br />
+            <div class="asm-section">.section .text</div>
+            <div class="asm-indent asm-label">global main</div>
+            <div class="asm-label">main:</div>
+            <br />
+            <div class="asm-label">file_open:</div>
+            <div class="asm-indent asm-instruction">
+              movq $2, %rax
+              <span class="asm-comment"># system call number (sys_open)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              leaq fileName(%rip), %rdi
+              <span class="asm-comment"># set file name</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rsi
+              <span class="asm-comment"
+                ># flags: O_RDONLY (read-only access)</span
+              >
+            </div>
+            <div class="asm-indent asm-instruction">
+              xorq %rdx, %rdx
+              <span class="asm-comment"
+                ># permissions: not needed for O_RDONLY (read-only)</span
+              >
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq %rax, fd(%rip)
+              <span class="asm-comment"># save file descriptor</span>
+            </div>
+            <br />
+            <div class="asm-label">file_lseek:</div>
+            <div class="asm-indent asm-instruction">
+              movq $8, %rax
+              <span class="asm-comment"># system call number (sys_lseek)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq fd(%rip), %rdi
+              <span class="asm-comment"># file descriptor</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $15, %rsi
+              <span class="asm-comment"># offset: move 15 bytes</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              movq $0, %rdx
+              <span class="asm-comment"
+                ># whence: SEEK_SET (from beginning)</span
+              >
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+            <br />
+            <div class="asm-label">exit_program:</div>
+            <div class="asm-indent asm-instruction">
+              movq $60, %rax
+              <span class="asm-comment"># system call number (sys_exit)</span>
+            </div>
+            <div class="asm-indent asm-instruction">
+              xorq %rdi, %rdi <span class="asm-comment"># exit status 0</span>
+            </div>
+            <div class="asm-indent asm-syscall">
+              syscall <span class="asm-comment"># call kernel</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>Unix Processes</h2>
+        <p>
+          Unix processes are independent programs running in memory. Each
+          process has its own memory space, file descriptors, and process ID
+          (PID). The operating system manages these processes and provides
+          system calls to create, control, and communicate between them.
+        </p>
+
+        <h3>fork</h3>
+        <p>
+          The <code>fork()</code> system call creates a new process by
+          duplicating the current process. The new process (child) is an exact
+          copy of the original process (parent), except for the return value of
+          <code>fork()</code>.
+        </p>
+
+        <div class="info-box">
+          <h4>How fork() works:</h4>
+          <ul>
+            <li><strong>Returns 0</strong> - In the child process</li>
+            <li><strong>Returns child PID</strong> - In the parent process</li>
+            <li><strong>Returns -1</strong> - On error (fork failed)</li>
+          </ul>
+        </div>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
+    
+    <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
+        <span class="c-comment">// Child process</span>
+        <span class="c-function">printf</span>(<span class="c-string">"I'm the child! PID: %d\n"</span>, <span class="c-function">getpid</span>());
+    } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid > <span class="c-number">0</span>) {
+        <span class="c-comment">// Parent process</span>
+        <span class="c-function">printf</span>(<span class="c-string">"I'm the parent! Child PID: %d\n"</span>, pid);
+        <span class="c-function">wait</span>(<span class="c-constant">NULL</span>); <span class="c-comment">// Wait for child to finish</span>
+    } <span class="c-keyword">else</span> {
+        <span class="c-comment">// Fork failed</span>
+        <span class="c-function">printf</span>(<span class="c-string">"Fork failed!\n"</span>);
+    }
+    
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <div class="explanation-box">
+          <h4>What happens step by step:</h4>
+          <ol>
+            <li>
+              <strong>fork() is called</strong> - Creates an identical copy of
+              the current process
+            </li>
+            <li>
+              <strong>Two processes exist</strong> - Parent and child, both
+              continue from the fork() line
+            </li>
+            <li>
+              <strong>Different return values</strong> - Child gets 0, parent
+              gets child's PID
+            </li>
+            <li>
+              <strong>Both execute if-else</strong> - Each process takes a
+              different branch
+            </li>
+            <li>
+              <strong>wait() synchronizes</strong> - Parent waits for child to
+              complete
+            </li>
+          </ol>
+        </div>
+
+        <div>Here's how it looks when you run it:</div>
+
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-buttons">
+              <span class="terminal-button red"></span>
+              <span class="terminal-button yellow"></span>
+              <span class="terminal-button green"></span>
+            </div>
+            <div class="terminal-title">Terminal</div>
+          </div>
+          <div class="terminal-content">
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command">gcc fork_demo.c -o fork_demo</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command">./fork_demo</span>
+            </div>
+            <div class="terminal-output">I'm the parent! Child PID: 1234</div>
+            <div class="terminal-output">I'm the child! PID: 1234</div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-cursor">█</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <h4>Key Points:</h4>
+          <ul>
+            <li>
+              <strong>Memory isolation</strong> - Child has its own copy of
+              variables
+            </li>
+            <li>
+              <strong>File descriptors</strong> - Child inherits parent's open
+              files
+            </li>
+            <li>
+              <strong>Process hierarchy</strong> - Parent-child relationship is
+              established
+            </li>
+            <li>
+              <strong>Concurrent execution</strong> - Both processes run
+              simultaneously
+            </li>
+          </ul>
+        </div>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">int</span> counter = <span class="c-number">0</span>;
+    
+    <span class="c-function">printf</span>(<span class="c-string">"Before fork: counter = %d\n"</span>, counter);
+    
+    <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
+    
+    <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
+        <span class="c-comment">// Child process</span>
+        counter += <span class="c-number">10</span>;
+        <span class="c-function">printf</span>(<span class="c-string">"Child: counter = %d\n"</span>, counter);
+    } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid > <span class="c-number">0</span>) {
+        <span class="c-comment">// Parent process</span>
+        counter += <span class="c-number">5</span>;
+        <span class="c-function">printf</span>(<span class="c-string">"Parent: counter = %d\n"</span>, counter);
+    }
+    
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <div class="explanation-box">
+          <h4>Memory Isolation Demo:</h4>
+          <p>
+            This example shows that each process has its own memory space. When
+            the child modifies <code>counter</code>, it doesn't affect the
+            parent's copy.
+          </p>
+          <p>
+            <em>Output: Parent shows counter = 5, Child shows counter = 10</em>
+          </p>
+        </div>
+
+        <h3>Understanding wait() - Process Synchronization</h3>
+        <p>
+          The <code>wait()</code> system call is crucial for parent-child
+          process coordination. It allows the parent to wait for a child process
+          to terminate and retrieve its exit status.
+        </p>
+
+        <div class="info-box">
+          <h4>How wait() works:</h4>
+          <ul>
+            <li>
+              <strong>Blocks the parent</strong> - Parent stops executing until
+              a child terminates
+            </li>
+            <li>
+              <strong>Returns child PID</strong> - The PID of the terminated
+              child process
+            </li>
+            <li>
+              <strong>Collects exit status</strong> - Stores termination
+              information in the status parameter
+            </li>
+            <li>
+              <strong>Prevents zombie processes</strong> - Cleans up terminated
+              child processes
+            </li>
+          </ul>
+        </div>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
+    <span class="c-keyword">int</span> status;
+    
+    <span class="c-keyword">if</span>(pid) {
+        <span class="c-comment">// Parent process</span>
+        <span class="c-function">printf</span>(<span class="c-string">"Parent: waiting for child (PID %d) to finish...\n"</span>, pid);
+        
+        <span class="c-keyword">int</span> child_pid = <span class="c-function">wait</span>(&amp;status);
+        
+        <span class="c-keyword">if</span> (<span class="c-function">WIFEXITED</span>(status))
+            <span class="c-function">printf</span>(<span class="c-string">"Parent: child PID %d exited with status %d\n"</span>, 
+                   child_pid, <span class="c-function">WEXITSTATUS</span>(status));
+    }
+    <span class="c-keyword">else</span> {
+        <span class="c-comment">// Child process</span>
+        <span class="c-function">printf</span>(<span class="c-string">"Child: I'm about to exit with status 18\n"</span>);
+        <span class="c-function">_exit</span>(<span class="c-number">18</span>); <span class="c-comment">// Exit with status 18</span>
+    }
+
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+            <!-- prettier-ignore-end -->
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Process Flow</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Start: main() executes
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">2</div>
+                pid = fork()
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">3</div>
+                Check pid value
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">pid > 0 (Parent)</div>
+                  <div class="flow-process">
+                    <div class="step-number">4</div>
+                    printf("Parent: waiting...")
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">5</div>
+                    child_pid = wait(&status)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">7</div>
+                    WIFEXITED(status) check
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">8</div>
+                    printf("child PID %d exited...")
+                  </div>
+                </div>
+
+                <div class="flow-branch">
+                  <div class="branch-label">pid == 0 (Child)</div>
+                  <div class="flow-process">
+                    <div class="step-number">4</div>
+                    printf("Child: I'm about...")
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-terminator">
+                    <div class="step-number">6</div>
+                    _exit(18)
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-arrow">↓</div>
+              <div class="flow-terminator">
+                <div class="step-number">9</div>
+                Program ends: return 0
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="explanation-box">
+          <h4>Step-by-Step Execution:</h4>
+          <ol>
+            <li>
+              <strong>fork() creates child</strong> - Parent gets child PID,
+              child gets 0
+            </li>
+            <li>
+              <strong>Child executes else block</strong> - Prints message and
+              exits with status 18
+            </li>
+            <li>
+              <strong>Parent calls wait()</strong> - Blocks until child
+              terminates
+            </li>
+            <li>
+              <strong>wait() returns</strong> - Returns the PID of the
+              terminated child
+            </li>
+            <li>
+              <strong>Status is analyzed</strong> - WIFEXITED() checks if child
+              exited normally
+            </li>
+            <li>
+              <strong>Exit status extracted</strong> - WEXITSTATUS() gets the
+              actual exit code (18)
+            </li>
+          </ol>
+        </div>
+
+        <div>Here's the terminal output showing the synchronization:</div>
+
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-buttons">
+              <span class="terminal-button red"></span>
+              <span class="terminal-button yellow"></span>
+              <span class="terminal-button green"></span>
+            </div>
+            <div class="terminal-title">Terminal</div>
+          </div>
+          <div class="terminal-content">
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command">gcc wait_demo.c -o wait_demo</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command">./wait_demo</span>
+            </div>
+            <div class="terminal-output">
+              Parent: waiting for child (PID 1234) to finish...
+            </div>
+            <div class="terminal-output">
+              Child: I'm about to exit with status 18
+            </div>
+            <div class="terminal-output">
+              Parent: child PID 1234 exited with status 18
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-cursor">█</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <h4>Why wait() Returns the Child PID:</h4>
+          <p>
+            Think of it logically: a parent process might have multiple children
+            running simultaneously. When <code>wait()</code> returns, the parent
+            needs to know <strong>which specific child</strong> just terminated.
+            The return value (child PID) identifies exactly which child process
+            finished.
+          </p>
+          <ul>
+            <li>
+              <strong>Multiple children scenario:</strong> Parent can
+              distinguish between different child processes
+            </li>
+            <li>
+              <strong>Process tracking:</strong> Parent can maintain records of
+              which children are still running
+            </li>
+            <li>
+              <strong>Selective waiting:</strong> Parent can take different
+              actions based on which child terminated
+            </li>
+          </ul>
+        </div>
+
+        <div class="explanation-box">
+          <h4>Process Termination Status Explained:</h4>
+          <ul>
+            <li>
+              <strong>status parameter:</strong> Contains packed information
+              about how the child terminated
+            </li>
+            <li>
+              <strong>WIFEXITED(status):</strong> Returns true if child exited
+              normally (not killed by signal)
+            </li>
+            <li>
+              <strong>WEXITSTATUS(status):</strong> Extracts the actual exit
+              code passed to _exit() or return
+            </li>
+            <li>
+              <strong>_exit(18):</strong> Child terminates immediately with exit
+              status 18
+            </li>
+          </ul>
+          <p>
+            <em
+              >The parent can use this information to determine if the child
+              completed successfully or encountered an error.</em
+            >
+          </p>
+        </div>
+
+        <h3>execvp() - Running External Programs</h3>
+        <p>
+          The <code>execvp()</code> system call replaces the current process
+          image with a new program. This is how Unix processes can run external
+          commands and programs.
+        </p>
+
+        <div class="info-box">
+          <h4>How execvp() works:</h4>
+          <ul>
+            <li>
+              <strong>Replaces process image</strong> - Loads new executable
+              into current process
+            </li>
+            <li>
+              <strong>Preserves PID</strong> - Same process ID, but different
+              program running
+            </li>
+            <li>
+              <strong>Command-line arguments</strong> - Passes argv array to the
+              new program
+            </li>
+            <li>
+              <strong>On success</strong> - Never returns (process becomes the
+              new program)
+            </li>
+            <li>
+              <strong>On failure</strong> - Returns negative value and continues
+              with original process
+            </li>
+          </ul>
+        </div>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+   <span class="c-keyword">char</span>* argv[<span class="c-number">3</span>] = { <span class="c-string">"ls"</span>, <span class="c-string">"-l"</span>, <span class="c-number">0</span> };
+   <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
+   <span class="c-keyword">if</span> (pid) 
+      <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
+   
+   <span class="c-keyword">else</span>
+      <span class="c-function">execvp</span>(argv[<span class="c-number">0</span>], argv);
+
+   <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <div class="explanation-box">
+          <h4>Code Breakdown:</h4>
+          <ul>
+            <li>
+              <strong>argv[3] = {"ls", "-l", 0}</strong> - This is indeed the
+              "ls -l" shell command
+            </li>
+            <li>
+              <strong>execvp(argv[0], argv)</strong> - Loads new process image
+              for child process from ls.exe file. argv is sent as command-line
+              arguments for the new process
+            </li>
+            <li>
+              <strong>Parent waits</strong> - Parent process waits for child to
+              complete the ls command
+            </li>
+            <li>
+              <strong>Child becomes ls</strong> - Child process is completely
+              replaced by the ls program
+            </li>
+          </ul>
+        </div>
+
+        <div>Here's the terminal output showing the ls command execution:</div>
+
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-buttons">
+              <span class="terminal-button red"></span>
+              <span class="terminal-button yellow"></span>
+              <span class="terminal-button green"></span>
+            </div>
+            <div class="terminal-title">Terminal</div>
+          </div>
+          <div class="terminal-content">
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command"
+                >gcc execvp_demo.c -o execvp_demo</span
+              >
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-command">./execvp_demo</span>
+            </div>
+            <div class="terminal-output">total 24</div>
+            <div class="terminal-output">
+              -rwxr-xr-x 1 user user 8760 Jan 15 10:30 execvp_demo
+            </div>
+            <div class="terminal-output">
+              -rw-r--r-- 1 user user 245 Jan 15 10:29 execvp_demo.c
+            </div>
+            <div class="terminal-output">
+              -rw-r--r-- 1 user user 123 Jan 15 09:45 demo.txt
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-cursor">█</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="explanation-box">
+          <h4>What Actually Happened:</h4>
+          <ol>
+            <li>
+              <strong>fork() creates child</strong> - Parent and child processes
+              exist
+            </li>
+            <li>
+              <strong>Parent calls wait()</strong> - Blocks and waits for child
+              completion
+            </li>
+            <li>
+              <strong>Child calls execvp()</strong> - Child process image is
+              replaced with "ls -l" program
+            </li>
+            <li>
+              <strong>ls executes</strong> - Lists directory contents in long
+              format
+            </li>
+            <li>
+              <strong>ls terminates</strong> - Child process ends, parent
+              resumes and exits
+            </li>
+          </ol>
+        </div>
+
+        <h4>What if we change the code like this:</h4>
+
+        <div
+          class="flowchart-container"
+          style="display: flex; gap: 15px; align-items: flex-start"
+        >
+          <div
+            style="display: flex; flex-direction: column; gap: 15px; flex: 1.3"
+          >
+            <!-- C Code Block -->
+            <div class="c-codeblock">
+              <span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+              <span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+              <span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+              <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+              <span class="c-keyword">int</span>
+              <span class="c-function">main</span>() {
+              <span class="c-keyword">char</span>* argv[<span class="c-number"
+                >2</span
+              >] = { <span class="c-string">"junk"</span>,
+              <span class="c-number">0</span> };
+              <span class="c-keyword">int</span> pid =
+              <span class="c-function">fork</span>();
+              <span class="c-keyword">if</span> (pid)
+              <span class="c-function">wait</span>(<span class="c-constant"
+                >NULL</span
+              >);
+
+              <span class="c-keyword">else</span>
+              <span class="c-function">execvp</span>(argv[<span class="c-number"
+                >0</span
+              >], argv);
+
+              <span class="c-keyword">return</span>
+              <span class="c-number">0</span>; }
+            </div>
+
+            <!-- Terminal Window -->
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-buttons">
+                  <span class="terminal-button red"></span>
+                  <span class="terminal-button yellow"></span>
+                  <span class="terminal-button green"></span>
+                </div>
+                <div class="terminal-title">Terminal</div>
+              </div>
+              <div class="terminal-content">
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:~/SPLab $</span>
+                  <span class="terminal-command"
+                    >gcc junk_demo.c -o junk_demo</span
+                  >
+                </div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:~/SPLab $</span>
+                  <span class="terminal-command">./junk_demo</span>
+                </div>
+                <div class="terminal-output error">sh: 1: junk: not found</div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:~/SPLab $</span>
+                  <span class="terminal-cursor">█</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flowchart-half" style="flex: 0.7">
+            <div class="flowchart">
+              <div class="flowchart-title">Process Flow (execvp Failure)</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Start: main() executes
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">2</div>
+                pid = fork()
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">3</div>
+                Check pid value
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">pid > 0 (Parent)</div>
+                  <div class="flow-process">
+                    <div class="step-number">4</div>
+                    wait(NULL)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">6</div>
+                    Parent resumes after child exits
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">7</div>
+                    return 0
+                  </div>
+                </div>
+
+                <div class="flow-branch">
+                  <div class="branch-label">pid == 0 (Child)</div>
+                  <div class="flow-process">
+                    <div class="step-number">4</div>
+                    execvp("junk", argv)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-terminator error">
+                    <div class="step-number">5</div>
+                    execvp() FAILS! "junk" not found
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">5</div>
+                    Child continues with original process
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">5</div>
+                    return 0 (child exits)
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-arrow">↓</div>
+              <div class="flow-terminator">
+                <div class="step-number">8</div>
+                Program ends
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <h4>Using a Junk Command to Demonstrate Failure:</h4>
+          <p>
+            Here we use "junk" - a command that doesn't exist - to intentionally
+            make execvp() fail. This shows what happens when the system can't
+            find the specified program.
+          </p>
+          <p>
+            <strong>Key Point:</strong> If execvp() fails, it returns a negative
+            (error) number. In this case, the child process proceeds with its
+            current process image instead of being replaced.
+          </p>
+        </div>
+
+        <h4>Back to our working example:</h4>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+   <span class="c-keyword">char</span>* argv[<span class="c-number">3</span>] = { <span class="c-string">"ls"</span>, <span class="c-string">"-l"</span>, <span class="c-number">0</span> };
+   <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
+   <span class="c-keyword">if</span> (pid) 
+      <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
+   
+   <span class="c-keyword">else</span>
+      <span class="c-function">execvp</span>(argv[<span class="c-number">0</span>], argv);
+
+   <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <div class="info-box">
+          <h4>🤔 Critical Question:</h4>
+          <p style="font-size: 1.1em; font-weight: 600; color: #fff">
+            Why does a parent process need a child process, if they do not work
+            in parallel??
+          </p>
         </div>
       </div>
     </div>

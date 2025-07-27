@@ -10,7 +10,7 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 1200px; /* Increased from 800px to 1200px */
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.95);
   padding: 40px;
@@ -620,5 +620,281 @@ body {
   .fd-table {
     min-width: 450px;
     font-size: 0.7em;
+  }
+}
+
+/* Assembly code blocks */
+.asm-codeblock {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  min-width: 350px;
+  max-width: 400px;
+  font-family: "Courier New", monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.asm-section {
+  color: #0066cc;
+}
+
+.asm-label {
+  color: #cc6600;
+}
+
+.asm-data {
+  color: #cc6600;
+}
+
+.asm-instruction {
+  color: #009900;
+}
+
+.asm-syscall {
+  color: #cc0000;
+  font-weight: bold;
+}
+
+.asm-comment {
+  color: #666;
+}
+
+.asm-indent {
+  margin-left: 20px;
+}
+
+/* Side-by-side layout */
+.side-by-side {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin: 20px 0;
+}
+
+.side-by-side .left-content {
+  flex: 1;
+}
+
+/* System call diagram styles */
+.system-call-diagram {
+  background: linear-gradient(
+    135deg,
+    #f0f8ff 0%,
+    #e6f3ff 50%,
+    #ffebcd 50%,
+    #ffe4b5 100%
+  );
+  border: 2px solid #333;
+  border-radius: 15px;
+  padding: 15px;
+  min-width: 280px;
+  max-width: 320px;
+  font-family: monospace;
+  font-size: 0.8em;
+  line-height: 1.6;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.system-call-diagram .user-layer {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.system-call-diagram .kernel-layer {
+  color: #cc6600;
+  font-weight: bold;
+}
+
+.system-call-diagram .flow-step {
+  margin: 3px 0;
+}
+
+.system-call-diagram .boundary {
+  border: 3px double #ff6600;
+  background: linear-gradient(45deg, #ff6600, #ff8533);
+  color: white;
+  font-weight: bold;
+  margin: 10px -5px;
+  padding: 5px;
+  border-radius: 6px;
+  font-size: 0.7em;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.system-call-diagram .boundary-text {
+  font-size: 0.6em;
+}
+
+/* System call argument lists */
+.sys-call-args {
+  list-style: none;
+  padding-left: 0;
+}
+
+.sys-call-args.disc-list {
+  list-style: disc;
+  padding-left: 20px;
+}
+
+.sys-call-args .error-text {
+  color: #666;
+}
+
+.sys-call-args .nested-list {
+  margin-left: 15px;
+  font-size: 0.9em;
+}
+
+/* Example breakdown styles */
+.example-breakdown {
+  font-size: 0.9em;
+}
+
+.example-workflow {
+  font-size: 0.9em;
+}
+
+.important-notes {
+  font-size: 0.9em;
+}
+
+/* Flowchart styles */
+.flowchart-container {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  margin: 20px 0;
+}
+
+.code-half {
+  flex: 1.3; /* Make code section slightly larger */
+  min-width: 0;
+}
+
+.flowchart-half {
+  flex: 0.7; /* Make flowchart smaller */
+  min-width: 0;
+}
+
+.flowchart {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 15px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.flowchart-title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1em;
+}
+
+.flow-step {
+  background: #667eea;
+  color: white;
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 500;
+  position: relative;
+}
+
+.flow-decision {
+  background: #f39c12;
+  color: white;
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-radius: 25px;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 500;
+  position: relative;
+}
+
+.flow-process {
+  background: #27ae60;
+  color: white;
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 500;
+  position: relative;
+}
+
+.flow-terminator {
+  background: #e74c3c;
+  color: white;
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 500;
+  position: relative;
+}
+
+.step-number {
+  position: absolute;
+  top: 2px;
+  right: 4px; /* Changed from left: 50% and transform to right: 4px */
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.flow-arrow {
+  text-align: center;
+  font-size: 1em;
+  color: #34495e;
+  margin: 3px 0;
+}
+
+.flow-split {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.flow-branch {
+  flex: 1;
+  text-align: center;
+}
+
+.branch-label {
+  font-size: 0.7em;
+  color: #7f8c8d;
+  margin: 3px 0;
+  font-weight: bold;
+}
+
+/* Responsive design for flowchart */
+@media (max-width: 768px) {
+  .flowchart-container {
+    flex-direction: column;
+  }
+
+  .code-half,
+  .flowchart-half {
+    flex: none;
+    width: 100%;
   }
 }
