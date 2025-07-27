@@ -1732,33 +1732,24 @@
             style="display: flex; flex-direction: column; gap: 15px; flex: 1.3"
           >
             <!-- C Code Block -->
-            <div class="c-codeblock">
-              <span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
-              <span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
-              <span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
-              <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
 
-              <span class="c-keyword">int</span>
-              <span class="c-function">main</span>() {
-              <span class="c-keyword">char</span>* argv[<span class="c-number"
-                >2</span
-              >] = { <span class="c-string">"junk"</span>,
-              <span class="c-number">0</span> };
-              <span class="c-keyword">int</span> pid =
-              <span class="c-function">fork</span>();
-              <span class="c-keyword">if</span> (pid)
-              <span class="c-function">wait</span>(<span class="c-constant"
-                >NULL</span
-              >);
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">char</span>* argv[<span class="c-number">2</span>] = { <span class="c-string">"junk"</span>, <span class="c-number">0</span> };
+    <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
+    <span class="c-keyword">if</span> (pid) 
+        <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
+    
+    <span class="c-keyword">else</span>
+        <span class="c-function">execvp</span>(argv[<span class="c-number">0</span>], argv);
 
-              <span class="c-keyword">else</span>
-              <span class="c-function">execvp</span>(argv[<span class="c-number"
-                >0</span
-              >], argv);
-
-              <span class="c-keyword">return</span>
-              <span class="c-number">0</span>; }
-            </div>
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+            <!-- prettier-ignore-end -->
 
             <!-- Terminal Window -->
             <div class="terminal-window">
