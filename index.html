@@ -9,18 +9,193 @@
   <body>
     <div class="container">
       <h1 class="main-title">Unix System Interface</h1>
+      <div class="author">
+        <em>This document was made by yarden kahanovitch</em>
+      </div>
 
       <h5 class="subtitle">
         This document is made according to Marina's computer architecture course
       </h5>
-
-      <div class="author">
-        <em>This document was made by me (Yarden)</em>
-      </div>
+      <h5 class="subtitle">
+        this file is based on the books: <br />
+        The C Programming Language by Kernighan-Ritchie<br />and:<br />Computer
+        Systems- A Programmer's Perspective by Bryant OHallaron
+      </h5>
 
       <div class="content-section">
-        <p class="tiny-text">This is very small text</p>
-        <span class="tiny-text">Small inline text</span>
+        <h2>Introduction to Unix System Calls</h2>
+        <p>
+          The Unix operating system provides its utilities through a set of
+          <strong>system calls</strong>, which are essentially functions within
+          the operating system that can be invoked by different programs. The
+          code of standard libraries (like <code>stdin</code>,
+          <code>stdout</code>, and <code>stderr</code>) is built upon these
+          fundamental utilities.
+        </p>
+
+        <h3>File Descriptor Table</h3>
+        <p>
+          In Unix systems, each process maintains a
+          <strong>file descriptor table</strong> that gives every process its
+          unique identity and access controls. This table manages how processes
+          interact with files and I/O streams.
+          <strong
+            >The file descriptor (fd) serves as the unique ID for each
+            process</strong
+          >
+          - it's how the operating system identifies and tracks which process is
+          accessing which resources.
+        </p>
+
+        <div class="table-container">
+          <table class="fd-table">
+            <thead>
+              <tr>
+                <th>File Descriptor</th>
+                <th>Name</th>
+                <th>Default Stream</th>
+                <th>Flags</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fd-number">0</td>
+                <td><code>stdin</code></td>
+                <td>Standard Input</td>
+                <td>R</td>
+                <td>Read input from keyboard/terminal</td>
+              </tr>
+              <tr>
+                <td class="fd-number">1</td>
+                <td><code>stdout</code></td>
+                <td>Standard Output</td>
+                <td>W</td>
+                <td>Write normal output to terminal</td>
+              </tr>
+              <tr>
+                <td class="fd-number">2</td>
+                <td><code>stderr</code></td>
+                <td>Standard Error</td>
+                <td>W</td>
+                <td>Write error messages to terminal</td>
+              </tr>
+              <tr>
+                <td class="fd-number">3+</td>
+                <td>Custom Files</td>
+                <td>User-defined</td>
+                <td>R/W/A</td>
+                <td>Files opened by the program</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-box">
+          <h4>Key Components:</h4>
+          <ul>
+            <li>
+              <strong>File Descriptor (fd):</strong> A unique integer identifier
+              (0, 1, 2, 3, ...) that acts as the <em>process ID</em> - this is
+              how the OS knows which process is making the request
+            </li>
+            <li>
+              <strong>Flags:</strong> Access permissions (R=Read, W=Write,
+              A=Append)
+            </li>
+            <li>
+              <strong>File Stream:</strong> The actual data stream the process
+              can manipulate
+            </li>
+          </ul>
+        </div>
+
+        <h3>File I/O Operations</h3>
+        <p>
+          Unix systems provide powerful file manipulation capabilities through
+          standard library functions. Let's examine a simple example that
+          demonstrates how to create, write to, and close a file:
+        </p>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-type">FILE</span>* fd = <span class="c-function">fopen</span>(<span class="c-string">"a.txt"</span>, <span class="c-string">"w+"</span>);
+    <span class="c-function">fprintf</span>(fd, <span class="c-string">"print to a.txt\n"</span>);
+    <span class="c-function">fclose</span>(fd);
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <div class="explanation-box">
+          <h4>How File I/O Works:</h4>
+          <ol>
+            <li>
+              <strong>File Opening:</strong> <code>fopen()</code> creates a file
+              pointer and opens "a.txt" in write mode ("w+")
+            </li>
+            <li>
+              <strong>Writing Data:</strong> <code>fprintf()</code> writes
+              formatted text to the file
+            </li>
+            <li>
+              <strong>File Closing:</strong> <code>fclose()</code> properly
+              closes the file and flushes any remaining data
+            </li>
+            <li>
+              <strong>File Descriptor:</strong> Behind the scenes, this creates
+              a new entry in the file descriptor table (likely fd=3) -
+              <em
+                >this fd number becomes the unique process ID for this file
+                operation</em
+              >
+            </li>
+          </ol>
+          <p>
+            <em
+              >This example shows how high-level C library functions interact
+              with the Unix file system through file descriptors. Notice how the
+              variable is named 'fd' - this represents the file descriptor
+              number that acts as the process identifier in the system's file
+              descriptor table.</em
+            >
+          </p>
+        </div>
+
+        <h3>Terminal Example</h3>
+        <p>
+          Here's how you would compile and run this program in a Unix terminal:
+        </p>
+
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-buttons">
+              <span class="terminal-button red"></span>
+              <span class="terminal-button yellow"></span>
+              <span class="terminal-button green"></span>
+            </div>
+            <div class="terminal-title">Terminal</div>
+          </div>
+          <div class="terminal-content">
+            <div class="terminal-line">
+              <span class="terminal-prompt">marina@vm:~/SPLab $</span>
+              <span class="terminal-command">gcc main.c</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">marina@vm:~/SPLab $</span>
+              <span class="terminal-command">./a.out</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">marina@vm:~/ SPLab $</span>
+              <span class="terminal-command">cat a.txt</span>
+            </div>
+            <div class="terminal-output">print to a.txt</div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">marina@vm:~/ SPLab $</span>
+              <span class="terminal-cursor">█</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </body>

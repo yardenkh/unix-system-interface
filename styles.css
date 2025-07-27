@@ -63,3 +63,293 @@ body {
   margin: 30px 0;
   padding: 20px 0;
 }
+
+.c-codeblock {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #007acc;
+  margin: 20px 0;
+  overflow-x: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  white-space: pre;
+  line-height: 1.6;
+  word-wrap: break-word;
+  word-break: keep-all;
+}
+
+.c-codeblock span {
+  white-space: nowrap;
+}
+
+.c-codeblock::before {
+  content: "C";
+  display: block;
+  background: #007acc;
+  color: white;
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin: -20px -20px 15px -20px;
+  border-radius: 4px 4px 0 0;
+  width: fit-content;
+}
+
+/* C Syntax Highlighting */
+.c-keyword {
+  color: #569cd6; /* Blue for keywords like void, int, for, if, switch, case, break, default, return */
+}
+
+.c-type {
+  color: #4ec9b0; /* Teal for types like va_list, char, double */
+}
+
+.c-string {
+  color: #ce9178; /* Orange for strings */
+}
+
+.c-comment {
+  color: #6a9955; /* Green for comments */
+  font-style: italic;
+}
+
+.c-function {
+  color: #dcdcaa; /* Yellow for function names */
+}
+
+.c-preprocessor {
+  color: #c586c0; /* Purple for preprocessor directives like #include */
+}
+
+.c-number {
+  color: #b5cea8; /* Light green for numbers */
+}
+
+.c-operator {
+  color: #d4d4d4; /* Default color for operators */
+}
+
+/* Enhanced content styling */
+.content-section h2 {
+  color: #2c3e50;
+  font-size: 1.8em;
+  margin: 30px 0 20px 0;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.content-section h3 {
+  color: #34495e;
+  font-size: 1.4em;
+  margin: 25px 0 15px 0;
+  font-weight: 600;
+}
+
+.content-section h4 {
+  color: #2c3e50;
+  font-size: 1.2em;
+  margin: 20px 0 10px 0;
+}
+
+.content-section p {
+  line-height: 1.7;
+  margin: 15px 0;
+  text-align: justify;
+}
+
+.content-section code {
+  background: #f8f9fa;
+  color: #e74c3c;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+/* File Descriptor Table */
+.table-container {
+  margin: 25px 0;
+  overflow-x: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.fd-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fd-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.fd-table th,
+.fd-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.fd-table th {
+  font-weight: 600;
+  font-size: 0.95em;
+  letter-spacing: 0.5px;
+}
+
+.fd-table tbody tr:hover {
+  background: #f8f9fa;
+  transform: scale(1.01);
+  transition: all 0.2s ease;
+}
+
+.fd-table .fd-number {
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-weight: bold;
+  background: #ecf0f1;
+  color: #2c3e50;
+  text-align: center;
+  border-radius: 4px;
+}
+
+/* Info and Explanation Boxes */
+.info-box,
+.explanation-box {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 25px 0;
+  box-shadow: 0 6px 15px rgba(116, 185, 255, 0.3);
+}
+
+.explanation-box {
+  background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+  box-shadow: 0 6px 15px rgba(0, 184, 148, 0.3);
+}
+
+.info-box h4,
+.explanation-box h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  color: white;
+}
+
+.info-box ul,
+.explanation-box ol {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+}
+
+.info-box li,
+.explanation-box li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.explanation-box em {
+  font-style: italic;
+  opacity: 0.9;
+  font-size: 0.95em;
+}
+
+/* Terminal Window */
+.terminal-window {
+  background: #1e1e1e;
+  border-radius: 8px;
+  margin: 25px 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+}
+
+.terminal-header {
+  background: #3c3c3c;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.terminal-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.terminal-button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminal-button.red {
+  background: #ff5f56;
+}
+
+.terminal-button.yellow {
+  background: #ffbd2e;
+}
+
+.terminal-button.green {
+  background: #27ca3f;
+}
+
+.terminal-title {
+  color: #cccccc;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.terminal-content {
+  padding: 20px;
+  background: #1e1e1e;
+  color: #ffffff;
+  line-height: 1.5;
+  font-size: 0.9em;
+}
+
+.terminal-line {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+.terminal-prompt {
+  color: #4caf50;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.terminal-command {
+  color: #ffffff;
+}
+
+.terminal-output {
+  color: #e0e0e0;
+  margin: 8px 0;
+  padding-left: 4px;
+}
+
+.terminal-cursor {
+  color: #ffffff;
+  animation: blink 1s infinite;
+  margin-left: 4px;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
