@@ -1,25 +1,14 @@
-<div align="center">
-
 # Unix System Interface
 
-##### This document is made according to Marina's computer architecture course
+## 🌐 [View Live Page](https://yardenkh.github.io/unix-system-interface/)
 
-<em>This document was made by me (Yarden)</em>
-
----
-
-<div align="left">
-
-<p><small>This is very small text</small></p>
-<span><small>Small inline text</small></span>
-
-</div>
-
-</div>
+> This document is made according to Marina's computer architecture course
+>
+> _This document was made by me (Yarden)_
 
 ---
 
-## View the Project
+## About This Project
 
 1. Open the project in VS Code
 2. Use the Live Server extension or open `index.html` in a browser
