@@ -357,19 +357,21 @@ body {
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
   body {
-    padding: 20px;
+    padding: 15px;
     font-size: 14px;
   }
 
   .container {
-    padding: 20px;
+    padding: 15px;
     margin: 0;
     max-width: 100%;
+    border-radius: 10px;
   }
 
   .main-title {
-    font-size: 2.2em;
+    font-size: 2em;
     margin-bottom: 20px;
+    text-align: center;
   }
 
   .subtitle {
@@ -378,7 +380,7 @@ body {
   }
 
   .content-section h2 {
-    font-size: 1.5em;
+    font-size: 1.4em;
   }
 
   .content-section h3 {
@@ -389,28 +391,36 @@ body {
     font-size: 1em;
   }
 
+  .content-section p {
+    text-align: left;
+    line-height: 1.6;
+  }
+
   /* Mobile table adjustments */
   .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
   }
 
   .fd-table {
-    min-width: 600px;
-    font-size: 0.85em;
+    min-width: 550px;
+    font-size: 0.8em;
   }
 
   .fd-table th,
   .fd-table td {
     padding: 8px 10px;
+    white-space: nowrap;
   }
 
   /* Mobile code block */
   .c-codeblock {
-    font-size: 0.8em;
-    padding: 15px;
+    font-size: 0.75em;
+    padding: 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
   }
 
   .c-codeblock span {
@@ -420,23 +430,23 @@ body {
   /* Mobile info boxes */
   .info-box,
   .explanation-box {
-    padding: 15px;
-    margin: 20px 0;
+    padding: 12px;
+    margin: 15px 0;
   }
 
   .info-box h4,
   .explanation-box h4 {
-    font-size: 1em;
+    font-size: 0.95em;
   }
 
   /* Mobile terminal */
   .terminal-window {
-    margin: 20px 0;
-    font-size: 0.8em;
+    margin: 15px 0;
+    font-size: 0.75em;
   }
 
   .terminal-content {
-    padding: 15px;
+    padding: 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -461,42 +471,154 @@ body {
 
 @media (max-width: 480px) {
   body {
-    padding: 10px;
-    font-size: 13px;
+    padding: 5px;
+    font-size: 12px;
   }
 
   .container {
-    padding: 15px;
+    padding: 10px;
+    border-radius: 8px;
   }
 
   .main-title {
-    font-size: 1.8em;
+    font-size: 1.6em;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 0.9em;
+    margin: 10px 0;
   }
 
   .content-section h2 {
-    font-size: 1.3em;
+    font-size: 1.2em;
+    margin: 20px 0 15px 0;
   }
 
   .content-section h3 {
-    font-size: 1.1em;
+    font-size: 1em;
+    margin: 15px 0 10px 0;
   }
 
+  .content-section h4 {
+    font-size: 0.95em;
+  }
+
+  .content-section p {
+    text-align: left;
+    margin: 10px 0;
+    line-height: 1.5;
+  }
+
+  /* Ultra-compact code block for phones */
   .c-codeblock {
-    font-size: 0.75em;
-    padding: 12px;
+    font-size: 0.7em;
+    padding: 8px;
+    margin: 15px 0;
+    line-height: 1.4;
   }
 
+  .c-codeblock::before {
+    margin: -8px -8px 10px -8px;
+    padding: 3px 6px;
+    font-size: 0.7em;
+  }
+
+  /* Ultra-compact terminal for phones */
   .terminal-window {
-    font-size: 0.75em;
+    font-size: 0.7em;
+    margin: 15px 0;
   }
 
   .terminal-content {
-    padding: 12px;
+    padding: 8px;
   }
 
+  .terminal-header {
+    padding: 6px 8px;
+  }
+
+  .terminal-button {
+    width: 8px;
+    height: 8px;
+  }
+
+  .terminal-title {
+    font-size: 0.7em;
+  }
+
+  /* Compact info boxes */
   .info-box,
   .explanation-box {
-    padding: 12px;
-    margin: 15px 0;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+  }
+
+  .info-box h4,
+  .explanation-box h4 {
+    font-size: 0.9em;
+    margin-bottom: 8px;
+  }
+
+  .info-box ul,
+  .explanation-box ol {
+    padding-left: 15px;
+  }
+
+  .info-box li,
+  .explanation-box li {
+    margin: 5px 0;
+    font-size: 0.9em;
+  }
+
+  /* Table optimizations for phone */
+  .fd-table {
+    min-width: 500px;
+    font-size: 0.75em;
+  }
+
+  .fd-table th,
+  .fd-table td {
+    padding: 6px 8px;
+  }
+
+  .fd-number {
+    font-size: 0.8em;
+  }
+}
+
+/* Extra small phones (like older iPhones) */
+@media (max-width: 375px) {
+  body {
+    padding: 3px;
+    font-size: 11px;
+  }
+
+  .container {
+    padding: 8px;
+  }
+
+  .main-title {
+    font-size: 1.4em;
+  }
+
+  .c-codeblock {
+    font-size: 0.65em;
+    padding: 6px;
+  }
+
+  .terminal-window {
+    font-size: 0.65em;
+  }
+
+  .terminal-content {
+    padding: 6px;
+  }
+
+  .fd-table {
+    min-width: 450px;
+    font-size: 0.7em;
   }
 }
