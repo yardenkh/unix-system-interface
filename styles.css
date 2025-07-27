@@ -227,11 +227,52 @@ body {
   border-radius: 10px;
   margin: 25px 0;
   box-shadow: 0 6px 15px rgba(116, 185, 255, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
 .explanation-box {
   background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
   box-shadow: 0 6px 15px rgba(0, 184, 148, 0.3);
+}
+
+/* Watermark text for info boxes */
+.info-box::before {
+  content: "info";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: white;
+  opacity: 0.2;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Watermark text for explanation boxes */
+.explanation-box::before {
+  content: "explanation";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: white;
+  opacity: 0.2;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ensure content appears above watermark */
+.info-box > *,
+.explanation-box > * {
+  position: relative;
+  z-index: 2;
 }
 
 .info-box h4,
@@ -467,6 +508,32 @@ body {
   .terminal-title {
     font-size: 0.8em;
   }
+
+  /* Mobile side-by-side layout */
+  .side-by-side {
+    flex-direction: column-reverse;
+    gap: 15px;
+  }
+
+  .side-by-side .left-content {
+    flex: none;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  /* Mobile assembly and system call code blocks */
+  .asm-codeblock {
+    font-size: 0.75em;
+    padding: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
+  }
+
+  .system-call-diagram {
+    margin: 15px 0;
+    padding: 12px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -635,6 +702,32 @@ body {
   font-size: 0.85em;
   line-height: 1.4;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  counter-reset: line-number;
+}
+
+.asm-line {
+  display: flex;
+  align-items: flex-start;
+  counter-increment: line-number;
+}
+
+.asm-line-number {
+  display: inline-block;
+  width: 30px;
+  color: #999;
+  font-size: 0.8em;
+  text-align: right;
+  margin-right: 10px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.asm-line-number::before {
+  content: counter(line-number);
+}
+
+.asm-line-content {
+  flex: 1;
 }
 
 .asm-section {

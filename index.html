@@ -284,10 +284,14 @@
         <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// Create a string to write to file</span>
     <span class="c-keyword">char</span> str[] = <span class="c-string">"Hi"</span>;
 
+    <span class="c-comment">// Open file for writing (creates if doesn't exist)</span>
     <span class="c-type">FILE</span>* fp = <span class="c-function">fopen</span>(<span class="c-string">"a.txt"</span>, <span class="c-string">"w"</span>);
+    <span class="c-comment">// Write string to file (high-level C library function)</span>
     <span class="c-function">fwrite</span>(str, <span class="c-number">1</span>, <span class="c-function">sizeof</span>(str), fp);
+    <span class="c-comment">// Close file and flush buffers</span>
     <span class="c-function">fclose</span>(fp);
 
     <span class="c-keyword">return</span>(<span class="c-number">0</span>);
@@ -1201,17 +1205,18 @@
 <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// Create a new process (duplicate current process)</span>
     <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
     
     <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
-        <span class="c-comment">// Child process</span>
+        <span class="c-comment">// Child process - fork() returned 0</span>
         <span class="c-function">printf</span>(<span class="c-string">"I'm the child! PID: %d\n"</span>, <span class="c-function">getpid</span>());
     } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid > <span class="c-number">0</span>) {
-        <span class="c-comment">// Parent process</span>
+        <span class="c-comment">// Parent process - fork() returned child's PID</span>
         <span class="c-function">printf</span>(<span class="c-string">"I'm the parent! Child PID: %d\n"</span>, pid);
         <span class="c-function">wait</span>(<span class="c-constant">NULL</span>); <span class="c-comment">// Wait for child to finish</span>
     } <span class="c-keyword">else</span> {
-        <span class="c-comment">// Fork failed</span>
+        <span class="c-comment">// Fork failed - fork() returned -1</span>
         <span class="c-function">printf</span>(<span class="c-string">"Fork failed!\n"</span>);
     }
     
@@ -1301,18 +1306,20 @@
 <span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// Initialize counter variable (shared initial value)</span>
     <span class="c-keyword">int</span> counter = <span class="c-number">0</span>;
     
     <span class="c-function">printf</span>(<span class="c-string">"Before fork: counter = %d\n"</span>, counter);
     
+    <span class="c-comment">// Fork creates two separate processes with their own memory</span>
     <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
     
     <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
-        <span class="c-comment">// Child process</span>
+        <span class="c-comment">// Child process - modify its own copy of counter</span>
         counter += <span class="c-number">10</span>;
         <span class="c-function">printf</span>(<span class="c-string">"Child: counter = %d\n"</span>, counter);
     } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid > <span class="c-number">0</span>) {
-        <span class="c-comment">// Parent process</span>
+        <span class="c-comment">// Parent process - modify its own copy of counter</span>
         counter += <span class="c-number">5</span>;
         <span class="c-function">printf</span>(<span class="c-string">"Parent: counter = %d\n"</span>, counter);
     }
@@ -1371,23 +1378,27 @@
 <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// Create child process</span>
     <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
+    <span class="c-comment">// Variable to store child's exit status</span>
     <span class="c-keyword">int</span> status;
     
     <span class="c-keyword">if</span>(pid) {
-        <span class="c-comment">// Parent process</span>
+        <span class="c-comment">// Parent process - wait for child to finish</span>
         <span class="c-function">printf</span>(<span class="c-string">"Parent: waiting for child (PID %d) to finish...\n"</span>, pid);
         
+        <span class="c-comment">// Block until child terminates, get its PID back</span>
         <span class="c-keyword">int</span> child_pid = <span class="c-function">wait</span>(&amp;status);
         
+        <span class="c-comment">// Check if child exited normally (not killed by signal)</span>
         <span class="c-keyword">if</span> (<span class="c-function">WIFEXITED</span>(status))
             <span class="c-function">printf</span>(<span class="c-string">"Parent: child PID %d exited with status %d\n"</span>, 
                    child_pid, <span class="c-function">WEXITSTATUS</span>(status));
     }
     <span class="c-keyword">else</span> {
-        <span class="c-comment">// Child process</span>
+        <span class="c-comment">// Child process - do some work then exit</span>
         <span class="c-function">printf</span>(<span class="c-string">"Child: I'm about to exit with status 18\n"</span>);
-        <span class="c-function">_exit</span>(<span class="c-number">18</span>); <span class="c-comment">// Exit with status 18</span>
+        <span class="c-function">_exit</span>(<span class="c-number">18</span>); <span class="c-comment">// Exit immediately with status 18</span>
     }
 
     <span class="c-keyword">return</span> <span class="c-number">0</span>;
@@ -1584,77 +1595,225 @@
 
         <h3>execvp() - Running External Programs</h3>
         <p>
-          The <code>execvp()</code> system call replaces the current process
-          image with a new program. This is how Unix processes can run external
-          commands and programs.
+          The <code>execvp()</code> system call is how Unix processes run
+          external commands and programs. Think of it as "replacing" the current
+          process with a completely different program. It's like taking over
+          someone's body - the process ID stays the same, but everything else
+          changes.
         </p>
 
         <div class="info-box">
           <h4>How execvp() works:</h4>
           <ul>
             <li>
-              <strong>Replaces process image</strong> - Loads new executable
-              into current process
+              <strong>Completely replaces the process</strong> - The current
+              program is thrown away and replaced with a new one
             </li>
             <li>
-              <strong>Preserves PID</strong> - Same process ID, but different
-              program running
+              <strong>Same process ID (PID)</strong> - The process keeps its ID,
+              but becomes a totally different program
             </li>
             <li>
-              <strong>Command-line arguments</strong> - Passes argv array to the
-              new program
+              <strong>Passes command-line arguments</strong> - The new program
+              receives the arguments you specify
             </li>
             <li>
-              <strong>On success</strong> - Never returns (process becomes the
-              new program)
+              <strong>Never returns on success</strong> - If it works, your
+              original program is gone forever
             </li>
             <li>
-              <strong>On failure</strong> - Returns negative value and continues
-              with original process
+              <strong>Returns only on failure</strong> - If the command doesn't
+              exist, execvp() fails and your original program continues
             </li>
           </ul>
         </div>
 
-        <!-- prettier-ignore -->
-        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+        <div class="explanation-box">
+          <h4>Real-world example:</h4>
+          <p>
+            Imagine you're a manager (parent process) and you need to send an
+            employee (child process) to deliver a presentation. You make a copy
+            of the employee (fork), then completely transform that copy into a
+            presentation-delivery specialist (execvp). The specialist delivers
+            the presentation and then disappears (process ends). Meanwhile, you
+            (the original manager) wait for the job to be done, then continue
+            with your normal work.
+          </p>
+        </div>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
 <span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
 <span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
 <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+   <span class="c-comment">// Create command array: program name + arguments + NULL terminator</span>
    <span class="c-keyword">char</span>* argv[<span class="c-number">3</span>] = { <span class="c-string">"ls"</span>, <span class="c-string">"-l"</span>, <span class="c-number">0</span> };
+   <span class="c-comment">// Fork to create child process</span>
    <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
    <span class="c-keyword">if</span> (pid) 
+      <span class="c-comment">// Parent: wait for child to complete</span>
       <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
    
    <span class="c-keyword">else</span>
+      <span class="c-comment">// Child: replace self with "ls -l" command</span>
       <span class="c-function">execvp</span>(argv[<span class="c-number">0</span>], argv);
 
    <span class="c-keyword">return</span> <span class="c-number">0</span>;
 }</div>
-        <!-- prettier-ignore-end -->
+            <!-- prettier-ignore-end -->
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Process Flow (execvp Success)</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Start: main() executes
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">2</div>
+                argv[3] = {"ls", "-l", 0}
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">3</div>
+                pid = fork()
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">4</div>
+                Check pid value
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">pid > 0 (Parent)</div>
+                  <div class="flow-process">
+                    <div class="step-number">5</div>
+                    wait(NULL)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">8</div>
+                    Parent wakes up
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">9</div>
+                    return 0
+                  </div>
+                </div>
+
+                <div class="flow-branch">
+                  <div class="branch-label">pid == 0 (Child)</div>
+                  <div class="flow-process">
+                    <div class="step-number">6</div>
+                    execvp("ls", argv)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-terminator">
+                    <div class="step-number">7</div>
+                    Child BECOMES "ls -l"
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">8</div>
+                    ls runs & exits
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-arrow">↓</div>
+              <div class="flow-terminator">
+                <div class="step-number">10</div>
+                Program ends
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="explanation-box">
-          <h4>Code Breakdown:</h4>
+          <h4>Code Breakdown - Step by Step:</h4>
           <ul>
             <li>
-              <strong>argv[3] = {"ls", "-l", 0}</strong> - This is indeed the
-              "ls -l" shell command
+              <strong>argv[3] = {"ls", "-l", 0}</strong> - This creates the
+              command "ls -l" (list files in long format). The array must end
+              with 0 to mark the end of arguments.
             </li>
             <li>
-              <strong>execvp(argv[0], argv)</strong> - Loads new process image
-              for child process from ls.exe file. argv is sent as command-line
-              arguments for the new process
+              <strong>fork() creates two processes</strong> - Parent (original
+              program) and child (copy of the program)
             </li>
             <li>
-              <strong>Parent waits</strong> - Parent process waits for child to
-              complete the ls command
+              <strong>Parent process (if pid > 0)</strong> - Calls wait() and
+              sleeps until the child finishes
             </li>
             <li>
-              <strong>Child becomes ls</strong> - Child process is completely
-              replaced by the ls program
+              <strong>Child process (if pid == 0)</strong> - Calls execvp() and
+              transforms into the "ls" program
+            </li>
+            <li>
+              <strong>execvp(argv[0], argv)</strong> - Child is completely
+              replaced by the program named in argv[0] ("ls") with all arguments
+              in argv
+            </li>
+            <li>
+              <strong>ls runs and exits</strong> - The transformed child process
+              lists files and then terminates
+            </li>
+            <li>
+              <strong>Parent wakes up</strong> - wait() returns, parent
+              continues and exits normally
             </li>
           </ul>
+        </div>
+
+        <div class="info-box">
+          <h4>Important: Understanding argv[0] and the argv array</h4>
+          <p>
+            <strong>argv[0]</strong> is <em>NOT</em> a process ID! It's the
+            <strong>program name</strong> that the new process should identify
+            itself as.
+          </p>
+          <ul style="margin-top: 10px">
+            <li>
+              <strong>argv[0] = "ls"</strong> - The name of the program to
+              execute
+            </li>
+            <li>
+              <strong>argv[1] = "-l"</strong> - First command-line argument
+            </li>
+            <li>
+              <strong>argv[2] = 0</strong> - NULL terminator (marks end of
+              arguments)
+            </li>
+          </ul>
+          <p style="margin-top: 10px">
+            When execvp(argv[0], argv) runs, it searches for a program named
+            "ls", and when that program starts, it receives the entire argv
+            array as its command-line arguments. The "ls" program will see
+            argv[0]="ls" and argv[1]="-l", just like if you typed "ls -l" in the
+            terminal!
+          </p>
+        </div>
+
+        <div class="info-box">
+          <h4>Key Point:</h4>
+          <p>
+            The child process doesn't "run the ls command" - it
+            <strong>becomes</strong> the ls command! It's like a complete
+            personality change. The child process stops being your program and
+            starts being the ls program instead.
+          </p>
         </div>
 
         <div>Here's the terminal output showing the ls command execution:</div>
@@ -1697,29 +1856,45 @@
         </div>
 
         <div class="explanation-box">
-          <h4>What Actually Happened:</h4>
+          <h4>What Actually Happened - The Complete Story:</h4>
           <ol>
             <li>
-              <strong>fork() creates child</strong> - Parent and child processes
-              exist
+              <strong>Program starts</strong> - Your main() function begins
+              executing
             </li>
             <li>
-              <strong>Parent calls wait()</strong> - Blocks and waits for child
-              completion
+              <strong>fork() creates identical twin</strong> - Now there are two
+              copies of your program running simultaneously
             </li>
             <li>
-              <strong>Child calls execvp()</strong> - Child process image is
-              replaced with "ls -l" program
+              <strong>Parent says "I'll wait"</strong> - Parent process calls
+              wait() and goes to sleep
             </li>
             <li>
-              <strong>ls executes</strong> - Lists directory contents in long
-              format
+              <strong>Child transforms completely</strong> - Child calls
+              execvp() and becomes the "ls -l" program (your original program in
+              the child is gone!)
             </li>
             <li>
-              <strong>ls terminates</strong> - Child process ends, parent
-              resumes and exits
+              <strong>ls does its job</strong> - The transformed child (now ls)
+              lists directory contents and prints them
+            </li>
+            <li>
+              <strong>ls finishes and dies</strong> - The ls program completes
+              and the child process terminates
+            </li>
+            <li>
+              <strong>Parent wakes up and exits</strong> - wait() returns,
+              parent realizes child is done, then parent exits too
             </li>
           </ol>
+
+          <p style="margin-top: 15px; font-style: italic; color: #666">
+            <strong>Important:</strong> This is exactly how your shell works
+            when you type "ls -l" in the terminal! The shell forks itself,
+            transforms the child into ls, waits for ls to finish, then shows you
+            the prompt again.
+          </p>
         </div>
 
         <h4>What if we change the code like this:</h4>
@@ -1739,12 +1914,16 @@
 <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// Try to run non-existent command "junk"</span>
     <span class="c-keyword">char</span>* argv[<span class="c-number">2</span>] = { <span class="c-string">"junk"</span>, <span class="c-number">0</span> };
+    <span class="c-comment">// Create child process</span>
     <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
     <span class="c-keyword">if</span> (pid) 
+        <span class="c-comment">// Parent: wait for child (even if execvp fails)</span>
         <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
     
     <span class="c-keyword">else</span>
+        <span class="c-comment">// Child: try to exec "junk" - this will fail!</span>
         <span class="c-function">execvp</span>(argv[<span class="c-number">0</span>], argv);
 
     <span class="c-keyword">return</span> <span class="c-number">0</span>;
@@ -1855,16 +2034,41 @@
         </div>
 
         <div class="info-box">
-          <h4>Using a Junk Command to Demonstrate Failure:</h4>
+          <h4>Understanding Command Failure with "junk":</h4>
           <p>
-            Here we use "junk" - a command that doesn't exist - to intentionally
-            make execvp() fail. This shows what happens when the system can't
-            find the specified program.
+            We intentionally use "junk" - a command that doesn't exist - to
+            demonstrate what happens when execvp() fails. This is educational
+            because it shows the difference between success and failure.
           </p>
-          <p>
-            <strong>Key Point:</strong> If execvp() fails, it returns a negative
-            (error) number. In this case, the child process proceeds with its
-            current process image instead of being replaced.
+
+          <h4>What happens when execvp() fails:</h4>
+          <ol>
+            <li>
+              <strong>Child tries to become "junk"</strong> - execvp() looks for
+              a program called "junk"
+            </li>
+            <li>
+              <strong>System can't find "junk"</strong> - No such program exists
+              on the system
+            </li>
+            <li>
+              <strong>execvp() fails and returns</strong> - Instead of
+              transforming, the child continues as your original program
+            </li>
+            <li>
+              <strong>Child reaches return 0</strong> - Since execvp() failed,
+              the child process continues and exits normally
+            </li>
+            <li>
+              <strong>Parent wakes up</strong> - wait() returns when child
+              exits, parent continues and exits
+            </li>
+          </ol>
+
+          <p style="margin-top: 15px">
+            <strong>Key insight:</strong> When execvp() succeeds, it never
+            returns (the process becomes something else). When it fails, it
+            returns an error and your original program continues running.
           </p>
         </div>
 
@@ -1877,12 +2081,16 @@
 <span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
 
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
+   <span class="c-comment">// Command array: "ls -l" (program + argument + NULL)</span>
    <span class="c-keyword">char</span>* argv[<span class="c-number">3</span>] = { <span class="c-string">"ls"</span>, <span class="c-string">"-l"</span>, <span class="c-number">0</span> };
+   <span class="c-comment">// Fork creates child process</span>
    <span class="c-keyword">int</span> pid = <span class="c-function">fork</span>();
    <span class="c-keyword">if</span> (pid) 
+      <span class="c-comment">// Parent waits for child to finish</span>
       <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
    
    <span class="c-keyword">else</span>
+      <span class="c-comment">// Child becomes the "ls" program</span>
       <span class="c-function">execvp</span>(argv[<span class="c-number">0</span>], argv);
 
    <span class="c-keyword">return</span> <span class="c-number">0</span>;
@@ -1894,6 +2102,586 @@
           <p style="font-size: 1.1em; font-weight: 600; color: #fff">
             Why does a parent process need a child process, if they do not work
             in parallel??
+          </p>
+          <p><b>let's find out...</b></p>
+        </div>
+
+        <h2>Unix Shell</h2>
+        <p>
+          A Unix shell is a command-line interpreter that provides a user
+          interface for the Unix operating system. It acts as an intermediary
+          between the user and the kernel, allowing users to execute commands,
+          run programs, and manage files. The shell reads commands from the
+          user, interprets them, and executes the appropriate programs.
+        </p>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>
+              💡 Why does the Shell need a child process, if they do not work in
+              parallel?
+            </h4>
+
+            <p><strong>The Answer:</strong></p>
+
+            <p>
+              If the shell called <code>execvp()</code> directly on itself,
+              <strong>we would lose the shell process entirely!</strong>
+              The shell would be replaced by the command being executed, and
+              when that command finishes, there would be no shell left to return
+              to.
+            </p>
+
+            <h4>Here's how the shell solves this problem:</h4>
+            <ol>
+              <li>
+                <strong>Shell displays prompt</strong> - Waits for user input
+              </li>
+              <li>
+                <strong>User types command</strong> - Shell parses the command
+                and parameters
+              </li>
+              <li>
+                <strong>Shell forks a child</strong> - Creates a copy of itself
+              </li>
+              <li>
+                <strong>Child executes command</strong> - Child process image is
+                replaced by the command
+              </li>
+              <li>
+                <strong>Parent waits</strong> - Shell waits for command to
+                complete
+              </li>
+              <li>
+                <strong>Command finishes</strong> - Child process terminates
+              </li>
+              <li>
+                <strong>Shell continues</strong> - Returns to step 1, ready for
+                next command
+              </li>
+            </ol>
+
+            <h4>Key insight:</h4>
+            <p>
+              The shell <strong>preserves itself</strong> by using a child
+              process as a "sacrificial" process that gets replaced by the
+              user's command. This way, the original shell process remains alive
+              and can continue accepting new commands after each one completes.
+            </p>
+          </div>
+
+          <!-- prettier-ignore -->
+          <div class="c-codeblock"><span class="c-comment">// Simplified Unix Shell Implementation</span>
+
+<span class="c-keyword">while</span> (<span class="c-constant">TRUE</span>) {
+    <span class="c-comment">// Display shell prompt (e.g., "$ ")</span>
+    <span class="c-function">typePrompt</span>();
+    <span class="c-comment">// Read user input and parse command + arguments</span>
+    <span class="c-function">getCommand</span>(&amp;command, &amp;parameters);
+  
+    <span class="c-keyword">if</span> (<span class="c-function">fork</span>() > <span class="c-number">0</span>) 	
+        <span class="c-comment">/* Parent (shell): wait for command to complete */</span>
+        <span class="c-function">wait</span>();
+    <span class="c-keyword">else</span> 
+        <span class="c-comment">/* Child: replace self with user's command */</span>
+        <span class="c-function">execvp</span>(command, parameters);	
+}</div>
+          <!-- prettier-ignore-end -->
+        </div>
+
+        <h2>Assembly and Fork</h2>
+        <p>
+          Understanding how fork() and execve() work at the assembly level
+          provides deep insight into Unix process management. This low-level
+          implementation shows exactly how system calls interact with the
+          kernel, how processes are created and managed, and how program
+          execution is transferred. Assembly code reveals the raw mechanics
+          behind C library functions, demonstrating the direct syscall interface
+          and register usage patterns that high-level languages abstract away.
+        </p>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>Assembly Implementation:</h4>
+            <!-- prettier-ignore -->
+            <div class="asm-codeblock">
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-section">.section .data</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">bin_ls:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .string "/bin/ls\0"
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">argv:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Pointer to filename</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .quad bin_ls
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Null-terminated argument list</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .quad 0
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Null-terminated environment</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">envp:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .quad 0
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">child_msg:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .string "child\n"
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">parent_msg:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .string "parent\n"
+              </div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-section">.section .bss</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">pid:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-data">
+                .skip 4
+              </div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-section">.section .text</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">.globl main</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">main:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># fork() system call</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                xorq %rax, %rax <span class="asm-comment"># Clear rax for syscall number</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $57, %rax <span class="asm-comment"># syscall number</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Check fork result</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                testq %rax, %rax <span class="asm-comment"># Check if rax is zero (child process)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                js fork_error <span class="asm-comment"># Jump to error handler if rax < 0</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                jz child_process <span class="asm-comment"># Jump if rax == 0 (child process)</span>
+              </div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">parent_process:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># wait() system call</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq %rax, %rdi <span class="asm-comment"># Save child's PID in rdi</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                xorq %rax, %rax <span class="asm-comment"># Zero out rax for syscall number</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $61, %rax <span class="asm-comment"># syscall number</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                xorq %rsi, %rsi <span class="asm-comment"># rsi = 0 (wait for any child process)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                xorq %rdx, %rdx <span class="asm-comment"># rdx = 0 (no options)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                xorq %r10, %r10 <span class="asm-comment"># r10 = 0 (no usage of rusage)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Print a message using write() syscall</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $1, %rdi <span class="asm-comment"># file descriptor 1 (stdout)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                leaq parent_msg(%rip), %rsi <span class="asm-comment"># pointer to parent message</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $7, %rdx <span class="asm-comment"># size of the parent message</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $1, %rax <span class="asm-comment"># syscall number for write()</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">exit:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Exit parent process</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $60, %rax <span class="asm-comment"># syscall number for exit()</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                xorq %rdi, %rdi <span class="asm-comment"># rdi = 0 (exit code)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">child_process:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># Print a message using write() syscall</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $1, %rdi <span class="asm-comment"># file descriptor 1 (stdout)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                leaq child_msg(%rip), %rsi <span class="asm-comment"># pointer to child message</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $6, %rdx <span class="asm-comment"># size of the child message</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $1, %rax <span class="asm-comment"># syscall number for write()</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># execve("/bin/ls", argv, envp) system call</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                leaq bin_ls(%rip), %rdi <span class="asm-comment"># rdi = pointer to filename</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                leaq argv(%rip), %rsi <span class="asm-comment"># rsi = pointer to argv array</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                leaq envp(%rip), %rdx <span class="asm-comment"># rdx = pointer to envp array</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $59, %rax <span class="asm-comment"># syscall number</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-comment"># If execve returns, it failed</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">execve_error:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $60, %rax <span class="asm-comment"># syscall number for exit()</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $1, %rdi <span class="asm-comment"># rdi = 1 (exit code)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            <br />
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-label">fork_error:</div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $60, %rax <span class="asm-comment"># syscall number for exit()</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-instruction">
+                movq $2, %rdi <span class="asm-comment"># rdi = 2 (exit code)</span>
+              </div>
+            </div>
+            <div class="asm-line">
+              <div class="asm-line-number"></div>
+              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+            </div>
+            </div>
+          </div>
+
+          <div class="right-content">
+            <h4>Equivalent C Code:</h4>
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// Assembly: xorq %rax, %rax;</span>
+    <span class="c-comment">//          movq $57, %rax; syscall</span>
+    <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
+    
+    <span class="c-comment">// Assembly: testq %rax, %rax;</span>
+    <span class="c-comment">//          js fork_error</span>
+    <span class="c-keyword">if</span> (pid < <span class="c-number">0</span>) {
+        <span class="c-comment">// Assembly: movq $60, %rax;</span>
+        <span class="c-comment">//          movq $2, %rdi; syscall</span>
+        <span class="c-function">exit</span>(<span class="c-number">2</span>); <span class="c-comment">// Fork error</span>
+    }
+    
+    <span class="c-comment">// Assembly: jz child_process</span>
+    <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
+        <span class="c-comment">// Assembly: movq $1, %rdi;</span>
+        <span class="c-comment">//          leaq child_msg(%rip), %rsi;</span>
+        <span class="c-comment">//          movq $6, %rdx;</span>
+        <span class="c-comment">//          movq $1, %rax; syscall</span>
+        <span class="c-function">write</span>(<span class="c-number">1</span>, <span class="c-string">"child\n"</span>, <span class="c-number">6</span>);
+        
+        <span class="c-comment">// Assembly: leaq bin_ls(%rip), %rdi;</span>
+        <span class="c-comment">//          leaq argv(%rip), %rsi;</span>
+        <span class="c-comment">//          leaq envp(%rip), %rdx;</span>
+        <span class="c-comment">//          movq $59, %rax; syscall</span>
+        <span class="c-keyword">char</span>* argv[] = { <span class="c-string">"/bin/ls"</span>, <span class="c-constant">NULL</span> };
+        <span class="c-keyword">char</span>* envp[] = { <span class="c-constant">NULL</span> };
+        <span class="c-function">execve</span>(<span class="c-string">"/bin/ls"</span>, argv, envp);
+        
+        <span class="c-comment">// Assembly: movq $60, %rax;</span>
+        <span class="c-comment">//          movq $1, %rdi; syscall</span>
+        <span class="c-function">exit</span>(<span class="c-number">1</span>); <span class="c-comment">// execve failed</span>
+    }
+    
+    <span class="c-keyword">else</span> {
+        <span class="c-comment">// Assembly: movq %rax, %rdi;</span>
+        <span class="c-comment">//          movq $61, %rax;</span>
+        <span class="c-comment">//          xorq %rsi, %rsi;</span>
+        <span class="c-comment">//          xorq %rdx, %rdx;</span>
+        <span class="c-comment">//          xorq %r10, %r10; syscall</span>
+        <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
+        
+        <span class="c-comment">// Assembly: movq $1, %rdi;</span>
+        <span class="c-comment">//          leaq parent_msg(%rip), %rsi;</span>
+        <span class="c-comment">//          movq $7, %rdx;</span>
+        <span class="c-comment">//          movq $1, %rax; syscall</span>
+        <span class="c-function">write</span>(<span class="c-number">1</span>, <span class="c-string">"parent\n"</span>, <span class="c-number">7</span>);
+        
+        <span class="c-comment">// Assembly: movq $60, %rax;</span>
+        <span class="c-comment">//          xorq %rdi, %rdi; syscall</span>
+        <span class="c-function">exit</span>(<span class="c-number">0</span>);
+    }
+    
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+          </div>
+        </div>
+
+        <div class="explanation-box">
+          <h4>How This Assembly Implementation Works:</h4>
+          <ol>
+            <li>
+              <strong>Data Section Setup:</strong> The assembly defines string
+              literals and data structures in memory, including the program path
+              ("/bin/ls"), argument array, and environment pointer - all stored
+              in the .data section with proper null termination.
+            </li>
+            <li>
+              <strong>Direct System Call Interface:</strong> Instead of using C
+              library functions, this code makes direct syscalls to the kernel
+              using specific syscall numbers (57 for fork, 61 for wait, 59 for
+              execve, 60 for exit) and the syscall instruction.
+            </li>
+            <li>
+              <strong>Register-Based Parameter Passing:</strong> System call
+              arguments are passed through specific registers (%rdi, %rsi, %rdx,
+              %r10) following the x86-64 calling convention, with %rax holding
+              the syscall number and receiving the return value.
+            </li>
+            <li>
+              <strong>Conditional Branching Logic:</strong> The assembly uses
+              conditional jumps (js, jz) to handle fork's three possible
+              outcomes: error (negative), child process (zero), and parent
+              process (positive PID).
+            </li>
+            <li>
+              <strong>Process Transformation:</strong> In the child process,
+              execve() completely replaces the process image with the new
+              program (/bin/ls), while the parent waits and then prints its
+              message, demonstrating the fundamental Unix process model at the
+              lowest level.
+            </li>
+          </ol>
+
+          <p style="margin-top: 15px">
+            <strong>Key Insight:</strong> This assembly code reveals the raw
+            mechanics that C library functions abstract away - every high-level
+            operation like fork(), wait(), and execve() ultimately translates to
+            these precise register manipulations and syscall invocations,
+            providing direct communication with the kernel.
           </p>
         </div>
       </div>
