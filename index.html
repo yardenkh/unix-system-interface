@@ -2202,6 +2202,114 @@
 
         <div class="side-by-side">
           <div class="left-content">
+            <h4>Equivalent C Code:</h4>
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-comment">// 18: xorq %rax, %rax</span>
+    <span class="c-comment">// 19: movq $57, %rax</span>
+    <span class="c-comment">// 20: syscall</span>
+    <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
+    
+    <span class="c-comment">// 22: testq %rax, %rax</span>
+    <span class="c-comment">// 23: js fork_error</span>
+    <span class="c-keyword">if</span> (pid < <span class="c-number">0</span>) {
+        <span class="c-comment">// 63: movq $60, %rax</span>
+        <span class="c-comment">// 64: movq $2, %rdi</span>
+        <span class="c-comment">// 65: syscall</span>
+        <span class="c-function">exit</span>(<span class="c-number">2</span>); <span class="c-comment">// Fork error</span>
+    }
+    
+    <span class="c-comment">// 24: jz child_process</span>
+    <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
+        <span class="c-comment">// 46: movq $1, %rdi</span>
+        <span class="c-comment">// 47: leaq child_msg(%rip), %rsi</span>
+        <span class="c-comment">// 48: movq $6, %rdx</span>
+        <span class="c-comment">// 49: movq $1, %rax</span>
+        <span class="c-comment">// 50: syscall</span>
+        <span class="c-function">write</span>(<span class="c-number">1</span>, <span class="c-string">"child\n"</span>, <span class="c-number">6</span>);
+        
+        <span class="c-comment">// 52: leaq bin_ls(%rip), %rdi</span>
+        <span class="c-comment">// 53: leaq argv(%rip), %rsi</span>
+        <span class="c-comment">// 54: leaq envp(%rip), %rdx</span>
+        <span class="c-comment">// 55: movq $59, %rax</span>
+        <span class="c-comment">// 56: syscall</span>
+        <span class="c-keyword">char</span>* argv[] = { <span class="c-string">"/bin/ls"</span>, <span class="c-constant">NULL</span> };
+        <span class="c-keyword">char</span>* envp[] = { <span class="c-constant">NULL</span> };
+        <span class="c-function">execve</span>(<span class="c-string">"/bin/ls"</span>, argv, envp);
+        
+        <span class="c-comment">// 59: movq $60, %rax</span>
+        <span class="c-comment">// 60: movq $1, %rdi</span>
+        <span class="c-comment">// 61: syscall</span>
+        <span class="c-function">exit</span>(<span class="c-number">1</span>); <span class="c-comment">// execve failed</span>
+    }
+    
+    <span class="c-keyword">else</span> {
+        <span class="c-comment">// 34: movq %rax, %rdi</span>
+        <span class="c-comment">// 35: xorq %rax, %rax</span>
+        <span class="c-comment">// 36: movq $61, %rax</span>
+        <span class="c-comment">// 37: xorq %rsi, %rsi</span>
+        <span class="c-comment">// 38: xorq %rdx, %rdx</span>
+        <span class="c-comment">// 39: xorq %r10, %r10</span>
+        <span class="c-comment">// 40: syscall</span>
+        <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
+        
+        <span class="c-comment">// 43: movq $1, %rdi</span>
+        <span class="c-comment">// 44: leaq parent_msg(%rip), %rsi</span>
+        <span class="c-comment">// 45: movq $7, %rdx</span>
+        <span class="c-comment">// 46: movq $1, %rax</span>
+        <span class="c-comment">// 47: syscall</span>
+        <span class="c-function">write</span>(<span class="c-number">1</span>, <span class="c-string">"parent\n"</span>, <span class="c-number">7</span>);
+        
+        <span class="c-comment">// 50: movq $60, %rax</span>
+        <span class="c-comment">// 51: xorq %rdi, %rdi</span>
+        <span class="c-comment">// 52: syscall</span>
+        <span class="c-function">exit</span>(<span class="c-number">0</span>);
+    }
+    
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+            <!-- prettier-ignore-end -->
+
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-buttons">
+                  <span class="terminal-button red"></span>
+                  <span class="terminal-button yellow"></span>
+                  <span class="terminal-button green"></span>
+                </div>
+                <div class="terminal-title">Terminal</div>
+              </div>
+              <div class="terminal-content">
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:~/assembly $</span>
+                  <span class="terminal-command"
+                    >gcc -o fork_demo fork_demo.c</span
+                  >
+                </div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:~/assembly $</span>
+                  <span class="terminal-command">./fork_demo</span>
+                </div>
+                <div class="terminal-output">child</div>
+                <div class="terminal-output">demo.txt</div>
+                <div class="terminal-output">fork_demo</div>
+                <div class="terminal-output">fork_demo.c</div>
+                <div class="terminal-output">fork_demo.s</div>
+                <div class="terminal-output">parent</div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:~/assembly $</span>
+                  <span class="terminal-cursor">█</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="right-content">
             <h4>Assembly Implementation:</h4>
             <!-- prettier-ignore -->
             <div class="asm-codeblock">
@@ -2211,71 +2319,43 @@
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">bin_ls:</div>
+              <div class="asm-line-content">bin_ls:  .string "/bin/ls\0"</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .string "/bin/ls\0"
-              </div>
+              <div class="asm-line-content">argv:</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">argv:</div>
+              <div class="asm-line-content asm-indent asm-comment">   # Pointer to filename</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Pointer to filename</div>
+              <div class="asm-line-content asm-indent">   .quad bin_ls</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .quad bin_ls
-              </div>
+              <div class="asm-line-content asm-indent asm-comment">   # Null-terminated argument list</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Null-terminated argument list</div>
+              <div class="asm-line-content asm-indent">   .quad 0</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .quad 0
-              </div>
+              <div class="asm-line-content asm-indent asm-comment">   # Null-terminated environment    # pointer for execve</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Null-terminated environment</div>
+              <div class="asm-line-content">    envp:   .quad 0</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">envp:</div>
+              <div class="asm-line-content">child_msg:   .string "child\n"</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .quad 0
-              </div>
-            </div>
-            <div class="asm-line">
-              <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">child_msg:</div>
-            </div>
-            <div class="asm-line">
-              <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .string "child\n"
-              </div>
-            </div>
-            <div class="asm-line">
-              <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">parent_msg:</div>
-            </div>
-            <div class="asm-line">
-              <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .string "parent\n"
-              </div>
+              <div class="asm-line-content">parent_msg:   .string "parent\n"</div>
             </div>
             <br />
             <div class="asm-line">
@@ -2284,13 +2364,7 @@
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">pid:</div>
-            </div>
-            <div class="asm-line">
-              <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-data">
-                .skip 4
-              </div>
+              <div class="asm-line-content">pid: .skip 4</div>
             </div>
             <br />
             <div class="asm-line">
@@ -2299,344 +2373,218 @@
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">.globl main</div>
+              <div class="asm-line-content">.globl main</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">main:</div>
+              <div class="asm-line-content">main:</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># fork() system call</div>
+              <div class="asm-line-content asm-indent asm-comment">    # fork() system call</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                xorq %rax, %rax <span class="asm-comment"># Clear rax for syscall number</span>
-              </div>
+              <div class="asm-line-content asm-indent">    xorq %rax, %rax         # Clear rax for syscall number</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $57, %rax <span class="asm-comment"># syscall number</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $57, %rax          # syscall number</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Check fork result</div>
+              <div class="asm-line-content asm-indent asm-comment">    # Check fork result</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                testq %rax, %rax <span class="asm-comment"># Check if rax is zero (child process)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    testq %rax, %rax        # Check if rax is zero (child process)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                js fork_error <span class="asm-comment"># Jump to error handler if rax < 0</span>
-              </div>
+              <div class="asm-line-content asm-indent">    js fork_error           # Jump to error handler if rax < 0</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                jz child_process <span class="asm-comment"># Jump if rax == 0 (child process)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    jz child_process        # Jump if rax == 0 (child process)</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">parent_process:</div>
+              <div class="asm-line-content">parent_process:</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># wait() system call</div>
+              <div class="asm-line-content asm-indent asm-comment">    # wait() system call</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq %rax, %rdi <span class="asm-comment"># Save child's PID in rdi</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq %rax, %rdi         # Save child's PID in rdi</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                xorq %rax, %rax <span class="asm-comment"># Zero out rax for syscall number</span>
-              </div>
+              <div class="asm-line-content asm-indent">    xorq %rax, %rax         # Zero out rax for syscall number</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $61, %rax <span class="asm-comment"># syscall number</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $61, %rax          # syscall number</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                xorq %rsi, %rsi <span class="asm-comment"># rsi = 0 (wait for any child process)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    xorq %rsi, %rsi         # rsi = 0 (wait for any child process)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                xorq %rdx, %rdx <span class="asm-comment"># rdx = 0 (no options)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    xorq %rdx, %rdx         # rdx = 0 (no options)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                xorq %r10, %r10 <span class="asm-comment"># r10 = 0 (no usage of rusage)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    xorq %r10, %r10         # r10 = 0 (no usage of rusage)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Print a message using write() syscall</div>
+              <div class="asm-line-content asm-indent asm-comment">    # Print a message using write() syscall</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $1, %rdi <span class="asm-comment"># file descriptor 1 (stdout)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $1, %rdi           # file descriptor 1 (stdout)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                leaq parent_msg(%rip), %rsi <span class="asm-comment"># pointer to parent message</span>
-              </div>
+              <div class="asm-line-content asm-indent">    leaq parent_msg(%rip), %rsi # pointer to parent message</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $7, %rdx <span class="asm-comment"># size of the parent message</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $7, %rdx          # size of the parent message</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $1, %rax <span class="asm-comment"># syscall number for write()</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $1, %rax           # syscall number for write()</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">exit:</div>
+              <div class="asm-line-content">exit: # Exit parent process</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Exit parent process</div>
+              <div class="asm-line-content asm-indent">    movq $60, %rax          # syscall number for exit()</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $60, %rax <span class="asm-comment"># syscall number for exit()</span>
-              </div>
+              <div class="asm-line-content asm-indent">    xorq %rdi, %rdi         # rdi = 0 (exit code)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                xorq %rdi, %rdi <span class="asm-comment"># rdi = 0 (exit code)</span>
-              </div>
-            </div>
-            <div class="asm-line">
-              <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">child_process:</div>
+              <div class="asm-line-content">child_process:</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># Print a message using write() syscall</div>
+              <div class="asm-line-content asm-indent asm-comment">    # Print a message using write() syscall</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $1, %rdi <span class="asm-comment"># file descriptor 1 (stdout)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $1, %rdi           # file descriptor 1 (stdout)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                leaq child_msg(%rip), %rsi <span class="asm-comment"># pointer to child message</span>
-              </div>
+              <div class="asm-line-content asm-indent">    leaq child_msg(%rip), %rsi # pointer to child message</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $6, %rdx <span class="asm-comment"># size of the child message</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $6, %rdx          # size of the child message</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $1, %rax <span class="asm-comment"># syscall number for write()</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $1, %rax           # syscall number for write()</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># execve("/bin/ls", argv, envp) system call</div>
+              <div class="asm-line-content asm-indent asm-comment">    # execve("/bin/ls", argv, envp) system call</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                leaq bin_ls(%rip), %rdi <span class="asm-comment"># rdi = pointer to filename</span>
-              </div>
+              <div class="asm-line-content asm-indent">    leaq bin_ls(%rip), %rdi # rdi = pointer to filename</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                leaq argv(%rip), %rsi <span class="asm-comment"># rsi = pointer to argv array</span>
-              </div>
+              <div class="asm-line-content asm-indent">    leaq argv(%rip), %rsi   # rsi = pointer to argv array</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                leaq envp(%rip), %rdx <span class="asm-comment"># rdx = pointer to envp array</span>
-              </div>
+              <div class="asm-line-content asm-indent">    leaq envp(%rip), %rdx   # rdx = pointer to envp array</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $59, %rax <span class="asm-comment"># syscall number</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $59, %rax          # syscall number</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-comment"># If execve returns, it failed</div>
+              <div class="asm-line-content asm-indent asm-comment">    # If execve returns, it failed</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">execve_error:</div>
+              <div class="asm-line-content">execve_error:</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $60, %rax <span class="asm-comment"># syscall number for exit()</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $60, %rax          # syscall number for exit()</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $1, %rdi <span class="asm-comment"># rdi = 1 (exit code)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $1, %rdi           # rdi = 1 (exit code)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             <br />
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-label">fork_error:</div>
+              <div class="asm-line-content">fork_error:</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $60, %rax <span class="asm-comment"># syscall number for exit()</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $60, %rax          # syscall number for exit()</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-instruction">
-                movq $2, %rdi <span class="asm-comment"># rdi = 2 (exit code)</span>
-              </div>
+              <div class="asm-line-content asm-indent">    movq $2, %rdi           # rdi = 2 (exit code)</div>
             </div>
             <div class="asm-line">
               <div class="asm-line-number"></div>
-              <div class="asm-line-content asm-indent asm-syscall">syscall</div>
+              <div class="asm-line-content asm-indent">    syscall</div>
             </div>
             </div>
-          </div>
-
-          <div class="right-content">
-            <h4>Equivalent C Code:</h4>
-            <!-- prettier-ignore -->
-            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
-<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
-<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
-<span class="c-preprocessor">#include &lt;stdlib.h&gt;</span>
-
-<span class="c-keyword">int</span> <span class="c-function">main</span>() {
-    <span class="c-comment">// Assembly: xorq %rax, %rax;</span>
-    <span class="c-comment">//          movq $57, %rax; syscall</span>
-    <span class="c-keyword">pid_t</span> pid = <span class="c-function">fork</span>();
-    
-    <span class="c-comment">// Assembly: testq %rax, %rax;</span>
-    <span class="c-comment">//          js fork_error</span>
-    <span class="c-keyword">if</span> (pid < <span class="c-number">0</span>) {
-        <span class="c-comment">// Assembly: movq $60, %rax;</span>
-        <span class="c-comment">//          movq $2, %rdi; syscall</span>
-        <span class="c-function">exit</span>(<span class="c-number">2</span>); <span class="c-comment">// Fork error</span>
-    }
-    
-    <span class="c-comment">// Assembly: jz child_process</span>
-    <span class="c-keyword">else</span> <span class="c-keyword">if</span> (pid == <span class="c-number">0</span>) {
-        <span class="c-comment">// Assembly: movq $1, %rdi;</span>
-        <span class="c-comment">//          leaq child_msg(%rip), %rsi;</span>
-        <span class="c-comment">//          movq $6, %rdx;</span>
-        <span class="c-comment">//          movq $1, %rax; syscall</span>
-        <span class="c-function">write</span>(<span class="c-number">1</span>, <span class="c-string">"child\n"</span>, <span class="c-number">6</span>);
-        
-        <span class="c-comment">// Assembly: leaq bin_ls(%rip), %rdi;</span>
-        <span class="c-comment">//          leaq argv(%rip), %rsi;</span>
-        <span class="c-comment">//          leaq envp(%rip), %rdx;</span>
-        <span class="c-comment">//          movq $59, %rax; syscall</span>
-        <span class="c-keyword">char</span>* argv[] = { <span class="c-string">"/bin/ls"</span>, <span class="c-constant">NULL</span> };
-        <span class="c-keyword">char</span>* envp[] = { <span class="c-constant">NULL</span> };
-        <span class="c-function">execve</span>(<span class="c-string">"/bin/ls"</span>, argv, envp);
-        
-        <span class="c-comment">// Assembly: movq $60, %rax;</span>
-        <span class="c-comment">//          movq $1, %rdi; syscall</span>
-        <span class="c-function">exit</span>(<span class="c-number">1</span>); <span class="c-comment">// execve failed</span>
-    }
-    
-    <span class="c-keyword">else</span> {
-        <span class="c-comment">// Assembly: movq %rax, %rdi;</span>
-        <span class="c-comment">//          movq $61, %rax;</span>
-        <span class="c-comment">//          xorq %rsi, %rsi;</span>
-        <span class="c-comment">//          xorq %rdx, %rdx;</span>
-        <span class="c-comment">//          xorq %r10, %r10; syscall</span>
-        <span class="c-function">wait</span>(<span class="c-constant">NULL</span>);
-        
-        <span class="c-comment">// Assembly: movq $1, %rdi;</span>
-        <span class="c-comment">//          leaq parent_msg(%rip), %rsi;</span>
-        <span class="c-comment">//          movq $7, %rdx;</span>
-        <span class="c-comment">//          movq $1, %rax; syscall</span>
-        <span class="c-function">write</span>(<span class="c-number">1</span>, <span class="c-string">"parent\n"</span>, <span class="c-number">7</span>);
-        
-        <span class="c-comment">// Assembly: movq $60, %rax;</span>
-        <span class="c-comment">//          xorq %rdi, %rdi; syscall</span>
-        <span class="c-function">exit</span>(<span class="c-number">0</span>);
-    }
-    
-    <span class="c-keyword">return</span> <span class="c-number">0</span>;
-}</div>
+            <!-- prettier-ignore-end -->
           </div>
         </div>
 
