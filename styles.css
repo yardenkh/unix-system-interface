@@ -353,3 +353,150 @@ body {
     opacity: 0;
   }
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  body {
+    padding: 20px;
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 20px;
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .main-title {
+    font-size: 2.2em;
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    font-size: 1em;
+    margin: 15px 0;
+  }
+
+  .content-section h2 {
+    font-size: 1.5em;
+  }
+
+  .content-section h3 {
+    font-size: 1.2em;
+  }
+
+  .content-section h4 {
+    font-size: 1em;
+  }
+
+  /* Mobile table adjustments */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .fd-table {
+    min-width: 600px;
+    font-size: 0.85em;
+  }
+
+  .fd-table th,
+  .fd-table td {
+    padding: 8px 10px;
+  }
+
+  /* Mobile code block */
+  .c-codeblock {
+    font-size: 0.8em;
+    padding: 15px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .c-codeblock span {
+    white-space: nowrap;
+  }
+
+  /* Mobile info boxes */
+  .info-box,
+  .explanation-box {
+    padding: 15px;
+    margin: 20px 0;
+  }
+
+  .info-box h4,
+  .explanation-box h4 {
+    font-size: 1em;
+  }
+
+  /* Mobile terminal */
+  .terminal-window {
+    margin: 20px 0;
+    font-size: 0.8em;
+  }
+
+  .terminal-content {
+    padding: 15px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .terminal-line {
+    white-space: nowrap;
+  }
+
+  .terminal-header {
+    padding: 8px 12px;
+  }
+
+  .terminal-button {
+    width: 10px;
+    height: 10px;
+  }
+
+  .terminal-title {
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .container {
+    padding: 15px;
+  }
+
+  .main-title {
+    font-size: 1.8em;
+  }
+
+  .content-section h2 {
+    font-size: 1.3em;
+  }
+
+  .content-section h3 {
+    font-size: 1.1em;
+  }
+
+  .c-codeblock {
+    font-size: 0.75em;
+    padding: 12px;
+  }
+
+  .terminal-window {
+    font-size: 0.75em;
+  }
+
+  .terminal-content {
+    padding: 12px;
+  }
+
+  .info-box,
+  .explanation-box {
+    padding: 12px;
+    margin: 15px 0;
+  }
+}
