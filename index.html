@@ -20,30 +20,156 @@
         This document is made according to Marina's computer architecture course
       </h5>
       <h5 class="subtitle">
-        this file is based on the books: <br />
-        The C Programming Language by Kernighan-Ritchie<br />and:<br />Computer
-        Systems- A Programmer's Perspective by Bryant OHallaron<br>
-        and also:<br>
+        this file is based on the presentation: <br />
         "lecture 8 - system calls" presentation by marina
       </h5>
 
       <div class="content-section">
-        <h2>Introduction to Unix System Calls</h2>
-        <h3><u><b>this part will represent ONLY the lecture's presentation. the books material is at the end and is considered extra</b></u></h3>
+        <h2>What is the Unix System Interface?</h2>
+        <h3>
+          <u
+            ><b
+              >this part will represent ONLY the lecture's presentation. the
+              books material is at the end and is considered extra</b
+            ></u
+          >
+        </h3>
+
         <p>
-          The Unix operating system provides its utilities through a set of
-          <strong>system calls</strong>, which are essentially functions within
-          the operating system that can be invoked by different programs. The
-          code of standard libraries (like <code>stdin</code>,
-          <code>stdout</code>, and <code>stderr</code>) is built upon these
-          fundamental utilities.
+          Imagine you're writing a program that saves data to a file. In your C
+          code, you call <code>fwrite()</code> and the data gets written. But
+          have you wondered how this actually works? How does your program
+          communicate with the hard drive, and how does the operating system
+          ensure that your program can't accidentally corrupt another program's
+          files?
         </p>
 
-        <h3>File Descriptor Table</h3>
         <p>
-          Each process maintains a <strong>file descriptor table</strong> with
-          unique integer IDs (0, 1, 2, 3...) that track file access and
-          permissions.
+          The answer lies in the <strong>Unix System Interface</strong>, a
+          carefully designed layer sitting between your programs and the
+          hardware. This interface provides
+          <strong>system calls</strong>—special functions that allow programs to
+          safely interact with files, processes, memory, and other system
+          resources.
+        </p>
+
+        <div class="info-box">
+          <h4>The Core Problem</h4>
+          <p>
+            Modern computers run multiple programs simultaneously. Allowing each
+            program direct access to hardware would result in:
+          </p>
+          <ul>
+            <li>
+              <strong>Security issues:</strong> Programs could read private
+              files.
+            </li>
+            <li>
+              <strong>Data corruption:</strong> Programs could overwrite each
+              other's data.
+            </li>
+            <li>
+              <strong>System crashes:</strong> A single buggy program could
+              crash the entire system.
+            </li>
+            <li>
+              <strong>Resource conflicts:</strong> Multiple programs competing
+              for the same hardware.
+            </li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h4>The Unix Solution</h4>
+          <p>Unix solves these issues by creating a controlled interface:</p>
+          <ul>
+            <li>
+              <strong>System Calls:</strong> Programs request services from the
+              OS through system calls.
+            </li>
+            <li>
+              <strong>Kernel Protection:</strong> The kernel controls all
+              hardware access and enforces security.
+            </li>
+            <li>
+              <strong>Process Isolation:</strong> Each program runs within its
+              own protected memory space.
+            </li>
+          </ul>
+        </div>
+
+        <h2>Understanding Unix Processes</h2>
+        <p>
+          Every program you run becomes a <strong>process</strong>—a
+          self-contained instance of that program. Understanding processes is
+          essential to understanding the Unix System Interface.
+        </p>
+
+        <div class="info-box">
+          <h4>A process includes:</h4>
+          <ul>
+            <li>
+              <strong>Memory Space:</strong> Contains the program's code, data,
+              and variables.
+            </li>
+            <li>
+              <strong>Process ID (PID):</strong> Unique identifier for the
+              process.
+            </li>
+            <li>
+              <strong>File Descriptor Table:</strong> Tracks open files and
+              their permissions.
+            </li>
+            <li>
+              <strong>Environment Variables:</strong> Configuration settings for
+              the process.
+            </li>
+            <li>
+              <strong>Working Directory:</strong> The process's current
+              operating directory.
+            </li>
+            <li>
+              <strong>Security Context:</strong> Permissions and access rights.
+            </li>
+          </ul>
+        </div>
+
+        <h3>How a Process Is Assembled</h3>
+        <p>When you run a program, the operating system:</p>
+
+        <div class="info-box">
+          <ol>
+            <li>Allocates memory space for the program.</li>
+            <li>Loads the program instructions into memory.</li>
+            <li>Assigns a unique PID.</li>
+            <li>
+              Sets up file descriptors (<code>stdin</code>, <code>stdout</code>,
+              <code>stderr</code>).
+            </li>
+            <li>Sets working directory and environment variables.</li>
+            <li>Assigns permissions based on user context.</li>
+            <li>Starts executing the program instructions.</li>
+          </ol>
+          <p>
+            Each process operates in isolation, ensuring system security and
+            stability.
+          </p>
+        </div>
+
+        <h3>File Descriptors:</h3>
+        <p>
+          Now that we understand the basic flow, let's talk about how Unix
+          organizes file access. Instead of letting programs directly manipulate
+          files, Unix uses a system called
+          <strong>file descriptors</strong>.
+        </p>
+
+        <p>
+          Think of file descriptors as simple "tickets" or "handles" that your
+          program gets when it opens a file. Each process maintains a
+          <strong>file descriptor table</strong> with unique integer IDs (0, 1,
+          2, 3...) that track which files are open and what permissions they
+          have.
         </p>
 
         <div class="table-container">
@@ -80,40 +206,293 @@
                 <td>Write error messages to terminal</td>
               </tr>
               <tr>
-                <td class="fd-number">3+</td>
-                <td>Custom Files</td>
+                <td class="fd-number">3</td>
+                <td>message.txt</td>
+                <td>Our File</td>
+                <td>W</td>
+                <td>The file we created in our example</td>
+              </tr>
+              <tr>
+                <td class="fd-number">4+</td>
+                <td>Other Files</td>
                 <td>User-defined</td>
                 <td>R/W/A</td>
-                <td>Files opened by the program</td>
+                <td>Additional files opened by the program</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <div class="info-box">
-          <h4>Key Components:</h4>
           <ul>
             <li>
-              <strong>fd:</strong> Unique process identifier (0, 1, 2, 3...)
+              <strong>fd 0, 1, 2:</strong> Always pre-opened for every program
+              (stdin, stdout, stderr)
             </li>
-            <li><strong>Flags:</strong> Access permissions (R/W/A)</li>
-            <li><strong>Stream:</strong> Data flow the process manipulates</li>
+            <li>
+              <strong>fd 3+:</strong> Your program gets these when opening files
+              with open() or fopen()
+            </li>
+            <li>
+              <strong>Flags:</strong> R=Read, W=Write, A=Append - determines
+              what operations are allowed
+            </li>
+            <li>
+              <strong>Simple integers:</strong> Much easier than dealing with
+              complex file paths and permissions
+            </li>
           </ul>
         </div>
 
-        <h3>System Call Functions</h3>
-        <p>Here are three essential Unix system calls for file manipulation:</p>
-
         <div class="info-box">
-          <h4>Why These Functions Matter:</h4>
+          <h4>Process ID vs File Descriptor:</h4>
           <p>
-            These are <strong>low-level system calls</strong> that directly
-            communicate with the operating system kernel. Unlike high-level
-            functions like <code>fopen()</code> or <code>fwrite()</code>, these
-            give you precise control over file operations and are the foundation
-            that all other file functions are built upon.
+            Don't confuse <strong>Process ID (PID)</strong> with
+            <strong>File Descriptor (FD)</strong>:
+          </p>
+          <ul>
+            <li>
+              <strong>PID:</strong> Identifies the process itself (unique
+              system-wide)
+            </li>
+            <li>
+              <strong>FD:</strong> Identifies an open file within that specific
+              process
+            </li>
+          </ul>
+          <p>
+            <em
+              >Each process has its own set of file descriptors (0, 1, 2, 3...),
+              but only one PID. The same file descriptor number in different
+              processes refers to completely different files.</em
+            >
+          </p>
+          <p>
+            <strong>Example - Two Text Editors Running Simultaneously:</strong>
+          </p>
+          <ul>
+            <li>
+              <strong>Process A:</strong> TextEditor (PID 1234) opens "data.txt"
+              → gets FD 3 <br /><em
+                >File descriptor table: 0=stdin, 1=stdout, 2=stderr,
+                3=data.txt</em
+              >
+            </li>
+            <li>
+              <strong>Process B:</strong> TextEditor (PID 5678) opens
+              "config.txt" → also gets FD 3 <br /><em
+                >File descriptor table: 0=stdin, 1=stdout, 2=stderr,
+                3=config.txt</em
+              >
+            </li>
+          </ul>
+          <p>
+            <strong>Key Point:</strong> Both processes have FD 3, but when
+            Process A writes to FD 3, it modifies "data.txt", while Process B
+            writing to FD 3 modifies "config.txt". The file descriptor numbers
+            are <em>process-local</em>, not system-wide!
           </p>
         </div>
+
+        <div class="info-box">
+          <h4>Flags:</h4>
+          <ul>
+            <li><strong>O_RDONLY:</strong> Read-only access.</li>
+            <li><strong>O_WRONLY:</strong> Write-only access.</li>
+            <li><strong>O_RDWR:</strong> Read and write access.</li>
+            <li><strong>O_CREAT:</strong> Create file if nonexistent.</li>
+            <li><strong>O_APPEND:</strong> Append data to end of file.</li>
+            <li><strong>O_TRUNC:</strong> Clear file contents upon opening.</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h4>Permissions (Who Can Do What):</h4>
+          <p>
+            Owner (User), Group, Others permissions with read (r), write (w),
+            execute (x).
+          </p>
+          <p><strong>Common examples:</strong></p>
+          <ul>
+            <li><strong>0644:</strong> Owner read/write, others read-only.</li>
+            <li>
+              <strong>0755:</strong> Owner full access, others read/execute.
+            </li>
+            <li><strong>0600:</strong> Owner read/write only.</li>
+          </ul>
+        </div>
+
+        <h3>How System Calls Work</h3>
+        <div>let us start with the following example:</div>
+
+        <!-- prettier-ignore -->
+        <div class="c-codeblock"><span class="c-preprocessor">#include&lt;stdio.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">char</span> str[] = <span class="c-string">"Hi"</span>;
+
+    <span class="c-keyword">FILE</span>* fp = <span class="c-function">fopen</span>(<span class="c-string">"a.txt"</span>, <span class="c-string">"w"</span>);
+    <span class="c-function">fwrite</span>(str, <span class="c-number">1</span>, <span class="c-function">sizeof</span>(str), fp);
+    <span class="c-function">fclose</span>(fp);
+
+    <span class="c-keyword">return</span>(<span class="c-number">0</span>);
+}</div>
+        <!-- prettier-ignore-end -->
+
+        <p>
+          we will inspect the function fwrite in this code, here's what happens:
+        </p>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <ol>
+              <li>
+                <strong>Program Call:</strong> You invoke a file-writing
+                function (<code>fwrite</code>).
+              </li>
+              <li>
+                <strong>C Library Translation:</strong> High-level calls
+                internally call low-level system calls.
+              </li>
+              <li>
+                <strong>Kernel Mode Switch:</strong> The CPU switches from user
+                mode to kernel mode securely.
+              </li>
+              <li>
+                <strong>Kernel Execution:</strong> Kernel routine performs the
+                requested file operation safely.
+              </li>
+              <li>
+                <strong>Hardware Access:</strong> Data is written safely to the
+                storage device.
+              </li>
+            </ol>
+            <p>
+              Understanding this low-level interaction provides precise control,
+              performance improvements, deeper system knowledge, and better
+              debugging capability.
+            </p>
+          </div>
+          <div class="system-call-diagram">
+            <div class="user-layer">👤 Your Program</div>
+            <div class="flow-step">↓ File writing function call</div>
+            <div class="user-layer">📚 C Library (glibc)</div>
+            <div class="flow-step">↓ write() wrapper function</div>
+
+            <div class="boundary">
+              🚧 USER / KERNEL BOUNDARY 🚧<br />
+              <span class="boundary-text">Security checkpoint</span>
+            </div>
+
+            <div class="flow-step">↓ syscall instruction</div>
+            <div class="kernel-layer">🗂️ System Call Table</div>
+            <div class="flow-step">↓ sys_write() lookup</div>
+            <div class="kernel-layer">⚙️ Kernel Routine</div>
+            <div class="flow-step">↓ Safe hardware access</div>
+            <div class="kernel-layer">💾 Hard Drive</div>
+          </div>
+        </div>
+
+        <h3>The Three Essential System Calls</h3>
+
+        <div class="info-box">
+          <h4>System Call Functions - The Building Blocks:</h4>
+          <p>
+            Unix file operations are built on three fundamental system calls.
+            Input and output uses the
+            <strong>read</strong> and <strong>write</strong> system calls, which
+            are accessed from C programs through two functions called
+            <code>read</code> and <code>write</code>.
+          </p>
+
+          <h5>read() - Reading Data from Files:</h5>
+          <div class="code-signature">
+            <code>int n_read = read(int fd, char *buf, int n);</code>
+          </div>
+          <ul>
+            <li>
+              <strong>fd:</strong> File descriptor (which file to read from)
+            </li>
+            <li>
+              <strong>buf:</strong> Character array in your program where the
+              data will go
+            </li>
+            <li><strong>n:</strong> Number of bytes to be transferred</li>
+            <li>
+              <strong>Returns:</strong> Count of bytes actually read. Zero
+              indicates end of file, -1 indicates an error
+            </li>
+          </ul>
+          <p>
+            <em
+              >Note: The number of bytes returned may be less than the number
+              requested.</em
+            >
+          </p>
+
+          <h5>write() - Writing Data to Files:</h5>
+          <div class="code-signature">
+            <code>int n_written = write(int fd, char *buf, int n);</code>
+          </div>
+          <ul>
+            <li>
+              <strong>fd:</strong> File descriptor (which file to write to)
+            </li>
+            <li>
+              <strong>buf:</strong> Character array in your program where the
+              data comes from
+            </li>
+            <li><strong>n:</strong> Number of bytes to be transferred</li>
+            <li>
+              <strong>Returns:</strong> Number of bytes actually written. An
+              error has occurred if this isn't equal to the number requested
+            </li>
+          </ul>
+
+          <h5>open() - Opening Files for Access:</h5>
+          <div class="code-signature">
+            <code>int open(char *name, int flags, int perms);</code>
+          </div>
+          <ul>
+            <li><strong>name:</strong> Pathname of the file to open</li>
+            <li>
+              <strong>flags:</strong> How you want to access the file (read,
+              write, create, etc.)
+            </li>
+            <li>
+              <strong>perms:</strong> File permissions when creating new files
+              (always zero for existing files)
+            </li>
+            <li>
+              <strong>Returns:</strong> File descriptor (positive integer) on
+              success, -1 on error
+            </li>
+          </ul>
+
+          <p>
+            <strong>Important:</strong> Other than the default standard input,
+            output and error, you must explicitly open files in order to read or
+            write them. There are two system calls for this,
+            <code>open</code> and <code>creat</code>. However,
+            <code>creat</code> is rarely used these days since it can be fully
+            replaced with <code>open</code>.
+          </p>
+
+          <p>
+            <em
+              >Every file operation on Unix ultimately uses these system calls,
+              no matter how high-level your programming language!</em
+            >
+          </p>
+        </div>
+
+        <h3>Example</h3>
+        <p>
+          Now that you understand the basics, let's see a more advanced example
+          that demonstrates the power of low-level system calls. This example
+          shows operations that would be difficult or impossible with high-level
+          functions:
+        </p>
 
         <!-- prettier-ignore -->
         <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
@@ -121,128 +500,111 @@
 <span class="c-preprocessor">#include &lt;string.h&gt;</span>
 <span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
 
-<span class="c-keyword">void</span> <span class="c-function">demo_open</span>() {
-    <span class="c-comment">// open() - Create/open file with permissions</span>
-    <span class="c-comment">// O_RDWR = read+write access, O_CREAT = create if not exists</span>
-    <span class="c-comment">// 0644 = owner read/write, group/others read-only</span>
-    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_RDWR | O_CREAT, <span class="c-number">0644</span>);
-    <span class="c-function">printf</span>(<span class="c-string">"File descriptor: %d\n"</span>, fd);
-    <span class="c-function">close</span>(fd);
-}
-
-<span class="c-keyword">void</span> <span class="c-function">demo_write</span>() {
-    <span class="c-comment">// write() - Write data to file descriptor</span>
-    <span class="c-comment">// O_WRONLY = write-only access</span>
-    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_WRONLY);
-    <span class="c-keyword">int</span> bytes = <span class="c-function">write</span>(fd, <span class="c-string">"Hello World\n"</span>, <span class="c-number">12</span>);
-    <span class="c-function">printf</span>(<span class="c-string">"Wrote %d bytes\n"</span>, bytes);
-    <span class="c-function">close</span>(fd);
-}
-
-<span class="c-keyword">void</span> <span class="c-function">demo_lseek</span>() {
-    <span class="c-comment">// lseek() - Move file pointer position</span>
-    <span class="c-comment">// O_RDWR = read+write access</span>
-    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_RDWR);
-    <span class="c-keyword">off_t</span> pos = <span class="c-function">lseek</span>(fd, <span class="c-number">6</span>, SEEK_SET);
-    <span class="c-function">write</span>(fd, <span class="c-string">"Unix"</span>, <span class="c-number">4</span>);
-    <span class="c-function">printf</span>(<span class="c-string">"Moved to position: %ld\n"</span>, pos);
-    <span class="c-function">close</span>(fd);
-}
-
 <span class="c-keyword">int</span> <span class="c-function">main</span>() {
-    <span class="c-function">demo_open</span>();
-    <span class="c-function">demo_write</span>();
-    <span class="c-function">demo_lseek</span>();
+    <span class="c-comment">// Step 1: Create file and write initial content</span>
+    <span class="c-keyword">int</span> fd = <span class="c-function">open</span>(<span class="c-string">"demo.txt"</span>, O_RDWR | O_CREAT, <span class="c-number">0644</span>);
+    <span class="c-function">write</span>(fd, <span class="c-string">"Hello World\n"</span>, <span class="c-number">12</span>);
+    <span class="c-function">printf</span>(<span class="c-string">"Created file with: Hello World\n"</span>);
+    
+    <span class="c-comment">// Step 2: Use lseek() to move to position 6 (after "Hello ")</span>
+    <span class="c-keyword">off_t</span> pos = <span class="c-function">lseek</span>(fd, <span class="c-number">6</span>, SEEK_SET);
+    <span class="c-function">printf</span>(<span class="c-string">"Moved file pointer to position: %ld\n"</span>, pos);
+    
+    <span class="c-comment">// Step 3: Overwrite "World" with "Unix"</span>
+    <span class="c-keyword">int</span> bytes = <span class="c-function">write</span>(fd, <span class="c-string">"Unix"</span>, <span class="c-number">4</span>);
+    <span class="c-function">printf</span>(<span class="c-string">"Overwrote %d bytes at position 6\n"</span>, bytes);
+    
+    <span class="c-comment">// Step 4: Close file</span>
+    <span class="c-function">close</span>(fd);
+    
+    <span class="c-function">printf</span>(<span class="c-string">"Final result: Hello Unix\n"</span>);
     <span class="c-keyword">return</span> <span class="c-number">0</span>;
 }</div>
         <!-- prettier-ignore-end -->
 
-        <div class="info-box">
-          <h4>System Call Functions:</h4>
-          <ul>
-            <li>
-              <strong>open()</strong> - Creates/opens file, returns file
-              descriptor
-            </li>
-            <li><strong>write()</strong> - Writes data to file descriptor</li>
-            <li><strong>lseek()</strong> - Changes file pointer position</li>
-          </ul>
-        </div>
-
         <div class="explanation-box">
-          <h4>What Actually Happens:</h4>
+          <h4>What This Advanced Example Demonstrates:</h4>
           <ol>
             <li>
-              <strong>demo_open()</strong> - Creates "demo.txt" and gets file
-              descriptor 3 (first available after 0,1,2)
+              <strong>Initial Write:</strong> Creates "demo.txt" and writes
+              "Hello World\n" (12 bytes)
             </li>
             <li>
-              <strong>demo_write()</strong> - Reopens file and writes "Hello
-              World\n" at the beginning
+              <strong>Precise Positioning:</strong> lseek() moves file pointer
+              to byte 6 (after "Hello ")
             </li>
             <li>
-              <strong>demo_lseek()</strong> - Reopens file, moves to position 6
-              (after "Hello "), then overwrites "World" with "Unix"
+              <strong>Selective Overwriting:</strong> Overwrites "World" (4
+              bytes) with "Unix" without affecting the rest
+            </li>
+            <li>
+              <strong>Result:</strong> File now contains "Hello Unix\n" instead
+              of "Hello World\n"
             </li>
           </ol>
           <p>
-            <em>Result: File contains "Hello Unix" instead of "Hello World"</em>
+            <em
+              >This type of precise file manipulation is essential for
+              databases, editors, and other applications that need to modify
+              specific parts of files efficiently.</em
+            >
           </p>
         </div>
 
         <div class="explanation-box">
-          <h4>lseek() Arguments & When to Use:</h4>
+          <h4>Understanding lseek() - The File Position Controller:</h4>
           <ul>
             <li>
-              <strong>SEEK_SET</strong> - From beginning of file (absolute
-              position)
+              <strong>SEEK_SET</strong> - Position from beginning of file:
+              <code>lseek(fd, 6, SEEK_SET)</code> = "go to byte 6"
             </li>
             <li>
-              <strong>SEEK_CUR</strong> - From current position (relative move)
+              <strong>SEEK_CUR</strong> - Position relative to current location:
+              <code>lseek(fd, 5, SEEK_CUR)</code> = "move forward 5 bytes"
             </li>
             <li>
-              <strong>SEEK_END</strong> - From end of file (append or read
-              backwards)
+              <strong>SEEK_END</strong> - Position from end of file:
+              <code>lseek(fd, 0, SEEK_END)</code> = "go to end of file"
             </li>
           </ul>
           <p>
             <em
-              >lseek(fd, 6, SEEK_SET) moves to byte 6 from start - useful for
-              editing specific parts of files without rewriting everything</em
+              >lseek() is like a cursor in a text editor - it determines where
+              the next read or write operation will happen</em
             >
           </p>
         </div>
 
         <div class="info-box">
-          <h4>Why close() is Essential:</h4>
-          <p>The <code>close()</code> function is crucial because:</p>
+          <h4>Why close() is Critical:</h4>
+          <p>Always remember to close your file descriptors! Here's why:</p>
           <ul>
             <li>
-              <strong>Flushes data</strong> - Ensures all written data is
-              actually saved to disk
+              <strong>Data Safety:</strong> Ensures all buffered data is
+              actually written to disk
             </li>
             <li>
-              <strong>Frees resources</strong> - Releases the file descriptor
+              <strong>Resource Management:</strong> Frees the file descriptor
               for other processes to use
             </li>
             <li>
-              <strong>Prevents memory leaks</strong> - OS has limited file
-              descriptors (usually ~1024 per process)
+              <strong>System Limits:</strong> Each process has a limit (~1024
+              file descriptors by default)
             </li>
             <li>
-              <strong>Unlocks files</strong> - Allows other programs to access
-              the file
+              <strong>File Locking:</strong> Releases any locks on the file so
+              other programs can access it
             </li>
           </ul>
           <p>
             <em
-              >Without close(), your data might not be saved and you could run
-              out of file descriptors!</em
+              >Forgetting to close files can lead to data loss, resource
+              exhaustion, and system instability!</em
             >
           </p>
         </div>
 
-        <div>here's how it looks in the terminal:</div>
+        <div>Here's how the advanced example looks in the terminal:</div>
 
         <div class="terminal-window">
           <div class="terminal-header">
@@ -255,108 +617,45 @@
           </div>
           <div class="terminal-content">
             <div class="terminal-line">
-              <span class="terminal-prompt">user@vm:~/SPLab $</span>
-              <span class="terminal-command">gcc main.c</span>
+              <span class="terminal-prompt">user@vm:~/unix-demo $</span>
+              <span class="terminal-command"
+                >gcc advanced_demo.c -o advanced_demo</span
+              >
             </div>
             <div class="terminal-line">
-              <span class="terminal-prompt">user@vm:~/SPLab $</span>
-              <span class="terminal-command">./a.out</span>
+              <span class="terminal-prompt">user@vm:~/unix-demo $</span>
+              <span class="terminal-command">./advanced_demo</span>
             </div>
-            <div class="terminal-output">File descriptor: 3</div>
-            <div class="terminal-output">Wrote 12 bytes</div>
-            <div class="terminal-output">Moved to position: 6</div>
+            <div class="terminal-output">Created file with: Hello World</div>
+            <div class="terminal-output">Moved file pointer to position: 6</div>
+            <div class="terminal-output">Overwrote 4 bytes at position 6</div>
+            <div class="terminal-output">Final result: Hello Unix</div>
             <div class="terminal-line">
-              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-prompt">user@vm:~/unix-demo $</span>
               <span class="terminal-command">cat demo.txt</span>
             </div>
             <div class="terminal-output">Hello Unix</div>
             <div class="terminal-line">
-              <span class="terminal-prompt">user@vm:~/SPLab $</span>
+              <span class="terminal-prompt">user@vm:~/unix-demo $</span>
               <span class="terminal-cursor">█</span>
             </div>
           </div>
         </div>
 
-        <h2>System Calls</h2>
+        <h2>Assembly Level: System Calls in Their Purest Form</h2>
         <p>
-          Understanding how high-level C functions translate to kernel system
-          calls:
+          Now that you understand how system calls work at the C level, let's
+          see what happens at the lowest level - assembly language. This is
+          where system calls directly communicate with the kernel using CPU
+          instructions.
         </p>
 
-        <!-- prettier-ignore -->
-        <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
-
-<span class="c-keyword">int</span> <span class="c-function">main</span>() {
-    <span class="c-comment">// Create a string to write to file</span>
-    <span class="c-keyword">char</span> str[] = <span class="c-string">"Hi"</span>;
-
-    <span class="c-comment">// Open file for writing (creates if doesn't exist)</span>
-    <span class="c-type">FILE</span>* fp = <span class="c-function">fopen</span>(<span class="c-string">"a.txt"</span>, <span class="c-string">"w"</span>);
-    <span class="c-comment">// Write string to file (high-level C library function)</span>
-    <span class="c-function">fwrite</span>(str, <span class="c-number">1</span>, <span class="c-function">sizeof</span>(str), fp);
-    <span class="c-comment">// Close file and flush buffers</span>
-    <span class="c-function">fclose</span>(fp);
-
-    <span class="c-keyword">return</span>(<span class="c-number">0</span>);
-}</div>
-        <!-- prettier-ignore-end -->
-
-        <div class="side-by-side">
-          <div class="left-content">
-            <h4>How System Calls Work - Step by Step:</h4>
-            <ol>
-              <li>
-                <strong>fwrite()</strong> - High-level C library function that
-                you call in your program
-              </li>
-              <li>
-                <strong>Wrapper Function</strong> - fwrite() internally calls
-                the lower-level write() function
-              </li>
-              <li>
-                <strong>System Call Setup</strong> - write() loads arguments
-                into CPU registers and executes "syscall" assembly instruction
-              </li>
-              <li>
-                <strong>Kernel Mode Switch</strong> - CPU switches from user
-                mode to kernel mode for security
-              </li>
-              <li>
-                <strong>System Call Table</strong> - CPU uses system call ID (in
-                rax register) to find the correct kernel function
-              </li>
-              <li>
-                <strong>Kernel Execution</strong> - sys_write() kernel routine
-                actually writes data to the file
-              </li>
-            </ol>
-            <p>
-              <em
-                >This multi-layer approach provides both convenience (high-level
-                functions) and security (kernel controls hardware access)</em
-              >
-            </p>
-          </div>
-
-          <div class="system-call-diagram">
-            <div class="user-layer">👤 User Program</div>
-            <div class="flow-step">↓ fwrite("Hi", 1, 3, fp)</div>
-            <div class="user-layer">📚 C Library (glibc)</div>
-            <div class="flow-step">↓ write() wrapper</div>
-
-            <div class="boundary">
-              🚧 USER / KERNEL 🚧<br />
-              <span class="boundary-text">BOUNDARY</span>
-            </div>
-
-            <div class="flow-step">↓ syscall instruction</div>
-            <div class="kernel-layer">🗂️ System Call Table</div>
-            <div class="flow-step">↓ sys_write() lookup</div>
-            <div class="kernel-layer">⚙️ Kernel Routine</div>
-            <div class="flow-step">↓ Actual file writing</div>
-            <div class="kernel-layer">💾 Hardware (Disk)</div>
-          </div>
-        </div>
+        <p>
+          When your C program calls <code>write()</code>, it eventually becomes
+          assembly instructions that load values into specific CPU registers and
+          execute the <code>syscall</code> instruction. Let's see exactly how
+          this works.
+        </p>
 
         <h2>sys_read</h2>
         <div class="side-by-side">
@@ -1596,6 +1895,531 @@
           </p>
         </div>
 
+        <h3>Advanced Process Management Examples</h3>
+        <p>
+          Now let's see practical examples of the three scenarios mentioned
+          above. Each example demonstrates a different aspect of process
+          management with accompanying flowcharts.
+        </p>
+
+        <h4>1. Multiple Children Scenario</h4>
+        <p>
+          This example shows how a parent process can create and distinguish
+          between multiple child processes:
+        </p>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">pid_t</span> child1, child2;
+    
+    <span class="c-comment">// Create first child</span>
+    child1 = <span class="c-function">fork</span>();
+    <span class="c-keyword">if</span> (child1 == <span class="c-number">0</span>) {
+        <span class="c-function">printf</span>(<span class="c-string">"Child 1: PID %d, doing task A\n"</span>, <span class="c-function">getpid</span>());
+        <span class="c-function">sleep</span>(<span class="c-number">2</span>);
+        <span class="c-keyword">return</span> <span class="c-number">10</span>; <span class="c-comment">// Exit code 10</span>
+    }
+    
+    <span class="c-comment">// Create second child</span>
+    child2 = <span class="c-function">fork</span>();
+    <span class="c-keyword">if</span> (child2 == <span class="c-number">0</span>) {
+        <span class="c-function">printf</span>(<span class="c-string">"Child 2: PID %d, doing task B\n"</span>, <span class="c-function">getpid</span>());
+        <span class="c-function">sleep</span>(<span class="c-number">1</span>);
+        <span class="c-keyword">return</span> <span class="c-number">20</span>; <span class="c-comment">// Exit code 20</span>
+    }
+    
+    <span class="c-comment">// Parent waits for children</span>
+    <span class="c-keyword">int</span> status;
+    <span class="c-keyword">pid_t</span> finished = <span class="c-function">wait</span>(&status);
+    
+    <span class="c-keyword">if</span> (finished == child1) {
+        <span class="c-function">printf</span>(<span class="c-string">"Child 1 finished with code %d\n"</span>, 
+                WEXITSTATUS(status));
+    } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (finished == child2) {
+        <span class="c-function">printf</span>(<span class="c-string">"Child 2 finished with code %d\n"</span>, 
+                WEXITSTATUS(status));
+    }
+    
+    <span class="c-comment">// Wait for remaining child</span>
+    finished = <span class="c-function">wait</span>(&status);
+    <span class="c-keyword">if</span> (finished == child1) {
+        <span class="c-function">printf</span>(<span class="c-string">"Child 1 finished with code %d\n"</span>, 
+                WEXITSTATUS(status));
+    } <span class="c-keyword">else</span> {
+        <span class="c-function">printf</span>(<span class="c-string">"Child 2 finished with code %d\n"</span>, 
+                WEXITSTATUS(status));
+    }
+    
+    <span class="c-function">printf</span>(<span class="c-string">"All children finished!\n"</span>);
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Multiple Children Process Flow</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Parent Process starts
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">2</div>
+                fork() → Child 1
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">3</div>
+                fork() → Child 2
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Child 1</div>
+                  <div class="flow-process">
+                    <div class="step-number">4a</div>
+                    Task A
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">5a</div>
+                    Exit(10)
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">Child 2</div>
+                  <div class="flow-process">
+                    <div class="step-number">4b</div>
+                    Task B
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">5b</div>
+                    Exit(20)
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">Parent</div>
+                  <div class="flow-process">
+                    <div class="step-number">4c</div>
+                    wait() × 2
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">5c</div>
+                    Identify finished child by PID
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-buttons">
+                  <span class="terminal-button red"></span>
+                  <span class="terminal-button yellow"></span>
+                  <span class="terminal-button green"></span>
+                </div>
+                <div class="terminal-title">
+                  Terminal - Multiple Children Output
+                </div>
+              </div>
+              <div class="terminal-content">
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-command"
+                    >gcc multiple_children.c -o multiple_children</span
+                  >
+                </div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-command">./multiple_children</span>
+                </div>
+                <div class="terminal-output">
+                  Child 1: PID 1234, doing task A
+                </div>
+                <div class="terminal-output">
+                  Child 2: PID 1235, doing task B
+                </div>
+                <div class="terminal-output">Child 2 finished with code 20</div>
+                <div class="terminal-output">Child 1 finished with code 10</div>
+                <div class="terminal-output">All children finished!</div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-cursor">█</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4>2. Process Tracking Scenario</h4>
+        <p>
+          This example shows how a parent can maintain records of which children
+          are still running:
+        </p>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">pid_t</span> children[<span class="c-number">3</span>];
+    <span class="c-keyword">int</span> active_children = <span class="c-number">3</span>;
+    
+    <span class="c-comment">// Create 3 children with different run times</span>
+    <span class="c-keyword">for</span> (<span class="c-keyword">int</span> i = <span class="c-number">0</span>; i < <span class="c-number">3</span>; i++) {
+        children[i] = <span class="c-function">fork</span>();
+        <span class="c-keyword">if</span> (children[i] == <span class="c-number">0</span>) {
+            <span class="c-function">printf</span>(<span class="c-string">"Child %d started (PID: %d)\n"</span>, i+<span class="c-number">1</span>, <span class="c-function">getpid</span>());
+            <span class="c-function">sleep</span>((i+<span class="c-number">1</span>) * <span class="c-number">2</span>); <span class="c-comment">// Different sleep times</span>
+            <span class="c-function">printf</span>(<span class="c-string">"Child %d finishing\n"</span>, i+<span class="c-number">1</span>);
+            <span class="c-keyword">return</span> i+<span class="c-number">1</span>;
+        }
+    }
+    
+    <span class="c-comment">// Track children as they finish</span>
+    <span class="c-keyword">while</span> (active_children > <span class="c-number">0</span>) {
+        <span class="c-keyword">int</span> status;
+        <span class="c-keyword">pid_t</span> finished_pid = <span class="c-function">wait</span>(&status);
+        
+        <span class="c-comment">// Find which child finished</span>
+        <span class="c-keyword">for</span> (<span class="c-keyword">int</span> i = <span class="c-number">0</span>; i < <span class="c-number">3</span>; i++) {
+            <span class="c-keyword">if</span> (children[i] == finished_pid) {
+                <span class="c-function">printf</span>(<span class="c-string">"Tracked: Child %d (PID %d) finished\n"</span>, 
+                        i+<span class="c-number">1</span>, finished_pid);
+                children[i] = -<span class="c-number">1</span>; <span class="c-comment">// Mark as finished</span>
+                active_children--;
+                <span class="c-keyword">break</span>;
+            }
+        }
+        
+        <span class="c-function">printf</span>(<span class="c-string">"Remaining active children: %d\n"</span>, active_children);
+    }
+    
+    <span class="c-function">printf</span>(<span class="c-string">"All children tracked and finished!\n"</span>);
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Process Tracking Flow</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Parent creates 3 children
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">2</div>
+                Initialize tracking array<br />children[3] = {PID1, PID2, PID3}
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Child 1</div>
+                  <div class="flow-process">
+                    <div class="step-number">3a</div>
+                    sleep(2s)
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">Child 2</div>
+                  <div class="flow-process">
+                    <div class="step-number">3b</div>
+                    sleep(4s)
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">Child 3</div>
+                  <div class="flow-process">
+                    <div class="step-number">3c</div>
+                    sleep(6s)
+                  </div>
+                </div>
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">4</div>
+                Parent waits in loop<br />wait() returns PID
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">5</div>
+                Find PID in array<br />Mark as finished (-1)<br />Update counter
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">6</div>
+                active_children = 0?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">No</div>
+                  <div class="flow-process">
+                    <div class="step-number">7a</div>
+                    Continue loop (back to step 4)
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">Yes</div>
+                  <div class="flow-process">
+                    <div class="step-number">7b</div>
+                    All children finished
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-buttons">
+                  <span class="terminal-button red"></span>
+                  <span class="terminal-button yellow"></span>
+                  <span class="terminal-button green"></span>
+                </div>
+                <div class="terminal-title">
+                  Terminal - Process Tracking Output
+                </div>
+              </div>
+              <div class="terminal-content">
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-command"
+                    >gcc process_tracking.c -o process_tracking</span
+                  >
+                </div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-command">./process_tracking</span>
+                </div>
+                <div class="terminal-output">Child 1 started (PID: 1234)</div>
+                <div class="terminal-output">Child 2 started (PID: 1235)</div>
+                <div class="terminal-output">Child 3 started (PID: 1236)</div>
+                <div class="terminal-output">Child 1 finishing</div>
+                <div class="terminal-output">
+                  Tracked: Child 1 (PID 1234) finished
+                </div>
+                <div class="terminal-output">Remaining active children: 2</div>
+                <div class="terminal-output">Child 2 finishing</div>
+                <div class="terminal-output">
+                  Tracked: Child 2 (PID 1235) finished
+                </div>
+                <div class="terminal-output">Remaining active children: 1</div>
+                <div class="terminal-output">Child 3 finishing</div>
+                <div class="terminal-output">
+                  Tracked: Child 3 (PID 1236) finished
+                </div>
+                <div class="terminal-output">Remaining active children: 0</div>
+                <div class="terminal-output">
+                  All children tracked and finished!
+                </div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-cursor">█</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4>3. Selective Waiting Scenario</h4>
+        <p>
+          This example shows how a parent can take different actions based on
+          which child terminated:
+        </p>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-preprocessor">#include &lt;stdio.h&gt;</span>
+<span class="c-preprocessor">#include &lt;unistd.h&gt;</span>
+<span class="c-preprocessor">#include &lt;sys/wait.h&gt;</span>
+
+<span class="c-keyword">int</span> <span class="c-function">main</span>() {
+    <span class="c-keyword">pid_t</span> worker_pid, monitor_pid;
+    
+    <span class="c-comment">// Create worker child</span>
+    worker_pid = <span class="c-function">fork</span>();
+    <span class="c-keyword">if</span> (worker_pid == <span class="c-number">0</span>) {
+        <span class="c-function">printf</span>(<span class="c-string">"Worker: Processing data...\n"</span>);
+        <span class="c-function">sleep</span>(<span class="c-number">3</span>);
+        <span class="c-function">printf</span>(<span class="c-string">"Worker: Data processing complete\n"</span>);
+        <span class="c-keyword">return</span> <span class="c-number">0</span>; <span class="c-comment">// Success</span>
+    }
+    
+    <span class="c-comment">// Create monitor child</span>
+    monitor_pid = <span class="c-function">fork</span>();
+    <span class="c-keyword">if</span> (monitor_pid == <span class="c-number">0</span>) {
+        <span class="c-function">printf</span>(<span class="c-string">"Monitor: Watching system health...\n"</span>);
+        <span class="c-function">sleep</span>(<span class="c-number">5</span>);
+        <span class="c-function">printf</span>(<span class="c-string">"Monitor: System check complete\n"</span>);
+        <span class="c-keyword">return</span> <span class="c-number">1</span>; <span class="c-comment">// Different exit code</span>
+    }
+    
+    <span class="c-comment">// Parent handles children based on which finishes first</span>
+    <span class="c-keyword">int</span> status;
+    <span class="c-keyword">pid_t</span> finished_pid = <span class="c-function">wait</span>(&status);
+    
+    <span class="c-keyword">if</span> (finished_pid == worker_pid) {
+        <span class="c-function">printf</span>(<span class="c-string">"Action: Worker finished first\n"</span>);
+        <span class="c-function">printf</span>(<span class="c-string">"Action: Proceeding with next phase\n"</span>);
+        <span class="c-comment">// Kill monitor since worker is done</span>
+        <span class="c-function">printf</span>(<span class="c-string">"Action: Terminating monitor\n"</span>);
+    } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (finished_pid == monitor_pid) {
+        <span class="c-function">printf</span>(<span class="c-string">"Action: Monitor finished first\n"</span>);
+        <span class="c-function">printf</span>(<span class="c-string">"Action: Checking if worker needs help\n"</span>);
+        <span class="c-comment">// Could send signal to worker or take other action</span>
+    }
+    
+    <span class="c-comment">// Wait for remaining child</span>
+    <span class="c-function">wait</span>(&status);
+    <span class="c-function">printf</span>(<span class="c-string">"Parent: All tasks completed\n"</span>);
+    
+    <span class="c-keyword">return</span> <span class="c-number">0</span>;
+}</div>
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Selective Waiting Flow</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Parent Process starts
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">fork() → Worker</div>
+                  <div class="flow-process">
+                    <div class="step-number">2a</div>
+                    Worker Child<br />Process Data (3s)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">3a</div>
+                    Exit(0)
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">fork() → Monitor</div>
+                  <div class="flow-process">
+                    <div class="step-number">2b</div>
+                    Monitor Child<br />Watch System (5s)
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">3b</div>
+                    Exit(1)
+                  </div>
+                </div>
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">4</div>
+                Parent: wait()<br />Returns PID of first to finish
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">5</div>
+                Which child finished?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Worker</div>
+                  <div class="flow-process">
+                    <div class="step-number">6a</div>
+                    Proceed to next phase
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">Monitor</div>
+                  <div class="flow-process">
+                    <div class="step-number">6b</div>
+                    Check worker status
+                  </div>
+                </div>
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">7</div>
+                Wait for remaining child and continue
+              </div>
+            </div>
+
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-buttons">
+                  <span class="terminal-button red"></span>
+                  <span class="terminal-button yellow"></span>
+                  <span class="terminal-button green"></span>
+                </div>
+                <div class="terminal-title">
+                  Terminal - Selective Waiting Output
+                </div>
+              </div>
+              <div class="terminal-content">
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-command"
+                    >gcc selective_waiting.c -o selective_waiting</span
+                  >
+                </div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-command">./selective_waiting</span>
+                </div>
+                <div class="terminal-output">Worker: Processing data...</div>
+                <div class="terminal-output">
+                  Monitor: Watching system health...
+                </div>
+                <div class="terminal-output">
+                  Worker: Data processing complete
+                </div>
+                <div class="terminal-output">Action: Worker finished first</div>
+                <div class="terminal-output">
+                  Action: Proceeding with next phase
+                </div>
+                <div class="terminal-output">Action: Terminating monitor</div>
+                <div class="terminal-output">
+                  Monitor: System check complete
+                </div>
+                <div class="terminal-output">Parent: All tasks completed</div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">user@vm:$</span>
+                  <span class="terminal-cursor">█</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <h3>execvp() - Running External Programs</h3>
         <p>
           The <code>execvp()</code> system call is how Unix processes run
@@ -2036,7 +2860,7 @@
           </div>
         </div>
 
-        <div class="info-box">
+        <div class="explanation-box">
           <h4>Understanding Command Failure with "junk":</h4>
           <p>
             We intentionally use "junk" - a command that doesn't exist - to
@@ -2103,8 +2927,10 @@
         <div class="info-box">
           <h4>🤔 Critical Question:</h4>
           <p style="font-size: 1.1em; font-weight: 600; color: #fff">
-            Why does a parent process need a child process, if they do not work
-            in parallel??
+            In the last example we can see that the parent and the child
+            processes will not execute in parallel. So why even bother having a
+            child process? Aren't there simpler solutions? Like for example
+            using the same process and adding a few more loops?
           </p>
           <p><b>let's find out...</b></p>
         </div>

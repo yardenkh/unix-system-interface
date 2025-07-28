@@ -991,3 +991,21 @@ body {
     width: 100%;
   }
 }
+
+/* Code signature styling */
+.code-signature {
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+  margin: 8px 0;
+  border-left: 4px solid #3498db;
+}
+
+.code-signature code {
+  background: none;
+  color: inherit;
+  font-weight: bold;
+}
