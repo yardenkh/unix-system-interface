@@ -1009,3 +1009,1111 @@ body {
   color: inherit;
   font-weight: bold;
 }
+
+/* Enhanced Visual Components for Coroutines */
+
+/* 3D-style component boxes */
+.component-box {
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  border: 2px solid #ddd;
+  border-radius: 15px;
+  padding: 20px;
+  margin: 15px;
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1),
+    -2px -2px 8px rgba(255, 255, 255, 0.8);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.component-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 12px 12px 24px rgba(0, 0, 0, 0.15),
+    -3px -3px 12px rgba(255, 255, 255, 0.9);
+}
+
+.component-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.component-icon {
+  font-size: 2em;
+  margin-right: 15px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.component-title {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.component-subtitle {
+  font-size: 0.9em;
+  color: #7f8c8d;
+  margin: 5px 0 0 0;
+}
+
+/* CPU Register visualization */
+.register-bank {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  background: #2c3e50;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.register {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 12px 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  border: 2px solid #34495e;
+}
+
+.register:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.register-name {
+  font-size: 0.8em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.register-value {
+  font-size: 0.7em;
+  opacity: 0.8;
+  display: block;
+}
+
+/* Memory layout visualization */
+.memory-layout {
+  background: #34495e;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.memory-layout::before {
+  content: "MEMORY LAYOUT";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.memory-section {
+  background: linear-gradient(90deg, #e74c3c, #c0392b);
+  color: white;
+  margin: 8px 0;
+  padding: 15px;
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.memory-section.stack {
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.memory-section.heap {
+  background: linear-gradient(90deg, #27ae60, #229954);
+}
+
+.memory-section.text {
+  background: linear-gradient(90deg, #8e44ad, #7d3c98);
+}
+
+.memory-section.data {
+  background: linear-gradient(90deg, #3498db, #2980b9);
+}
+
+.memory-address {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Courier New", monospace;
+  font-size: 0.7em;
+  opacity: 0.8;
+}
+
+.memory-content {
+  margin-left: 80px;
+  font-weight: bold;
+}
+
+/* Quantum counter visualization */
+.quantum-meter {
+  background: #2c3e50;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.quantum-display {
+  background: #1a252f;
+  border: 3px solid #34495e;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.quantum-bar {
+  height: 30px;
+  background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #27ae60 100%);
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.quantum-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+  width: 75%; /* Example: 3/4 quantum remaining */
+  border-radius: 15px;
+  transition: width 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+.quantum-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  font-family: "Courier New", monospace;
+}
+
+/* Context switch animation */
+.context-switch-demo {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  border: 2px dashed #bdc3c7;
+  position: relative;
+  overflow: hidden;
+}
+
+.context-switch-step {
+  display: flex;
+  align-items: center;
+  margin: 15px 0;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.context-switch-step:hover {
+  transform: translateX(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.step-icon {
+  font-size: 2em;
+  margin-right: 20px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.step-description {
+  color: #7f8c8d;
+  font-size: 0.9em;
+}
+
+/* Enhanced UML-style diagram */
+.advanced-uml-diagram {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border: 3px solid #34495e;
+  border-radius: 20px;
+  padding: 30px;
+  margin: 30px 0;
+  font-family: "Segoe UI", sans-serif;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.advanced-uml-diagram::before {
+  content: "ENHANCED UML ARCHITECTURE";
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c3e50;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-size: 0.8em;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.uml-layer {
+  margin: 25px 0;
+  position: relative;
+}
+
+.uml-component {
+  background: white;
+  border: 2px solid #3498db;
+  border-radius: 15px;
+  padding: 20px;
+  margin: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.uml-component:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.uml-component.scheduler {
+  border-color: #e74c3c;
+  background: linear-gradient(135deg, #fdedec, #f8d7da);
+}
+
+.uml-component.coroutine {
+  border-color: #f39c12;
+  background: linear-gradient(135deg, #fef9e7, #fff3cd);
+}
+
+.uml-component.memory {
+  border-color: #8e44ad;
+  background: linear-gradient(135deg, #f4ecf7, #e2e3f7);
+}
+
+.uml-component.context {
+  border-color: #27ae60;
+  background: linear-gradient(135deg, #eafaf1, #d4edda);
+}
+
+.uml-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.uml-icon {
+  font-size: 1.5em;
+  margin-right: 10px;
+}
+
+.uml-title {
+  font-weight: bold;
+  color: #2c3e50;
+  font-size: 1.1em;
+}
+
+.uml-methods {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.uml-methods li {
+  padding: 5px 0;
+  color: #5d6d7e;
+  font-size: 0.9em;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.uml-methods li::before {
+  content: "→ ";
+  color: #3498db;
+  font-weight: bold;
+}
+
+.uml-relationships {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.uml-arrow {
+  position: absolute;
+  color: #34495e;
+  font-size: 1.5em;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Classic UML Diagram Styles with Bounding Box Collision Detection */
+.classic-uml-container {
+  background: #ffffff;
+  border: 2px solid #2c3e50;
+  border-radius: 10px;
+  padding: 30px;
+  margin: 30px 0;
+  position: relative;
+  min-height: 1100px; /* Increased to match container height */
+  overflow: visible;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+  /* Container dimensions for relative positioning */
+  --container-width: 100%;
+  --container-height: 1100px; /* Significantly increased for better spacing */
+  --class-min-width: 200px;
+  --class-min-height: 140px;
+  --spacing-buffer: 40px; /* Spacing between classes */
+
+  /* Content-aware dimensions - using flexible sizing now */
+  --class-min-width: 200px;
+  --class-min-height: 140px;
+  --spacing-buffer: 40px; /* Spacing between classes */
+
+  /* ===============================================
+     SIMPLIFIED CONNECTION POINTS v3.0  
+     Connect directly to wrapper boundaries for accurate positioning
+     =============================================== */
+
+  /* Direct wrapper edge calculations (wrappers have padding+border+margin) */
+  --scheduler-wrapper-right: calc(
+    var(--scheduler-x) + 250px + 25px + 3px
+  ); /* x + width + padding + border */
+  --scheduler-wrapper-bottom: calc(
+    var(--scheduler-y) + 220px + 25px + 3px
+  ); /* y + min-height + padding + border */
+  --scheduler-wrapper-center-x: calc(
+    var(--scheduler-x) + (250px + 25px + 3px) / 2
+  );
+  --scheduler-wrapper-center-y: calc(
+    var(--scheduler-y) + (220px + 25px + 3px) / 2
+  );
+
+  --ccb-manager-wrapper-right: calc(var(--ccb-manager-x) + 250px + 25px + 3px);
+  --ccb-manager-wrapper-center-y: calc(
+    var(--ccb-manager-y) + (220px + 25px + 3px) / 2
+  );
+
+  --context-switcher-wrapper-left: var(--context-switcher-x);
+  --context-switcher-wrapper-center-y: calc(
+    var(--context-switcher-y) + (220px + 25px + 3px) / 2
+  );
+  --context-switcher-wrapper-upper-y: calc(
+    var(--context-switcher-y) + 40px
+  ); /* 40px down from wrapper top */ /* =============================================== */
+
+  /* Scheduler position (main anchor - center top) */
+  --scheduler-x: calc(50% - 145px); /* Adjusted for new total wrapper size */
+  --scheduler-y: 30px;
+
+  /* Position coroutines with MUCH larger spacing - increased gaps */
+  --coroutine1-x: 20px; /* Left side with extra buffer */
+  --coroutine1-y: 320px; /* Much further below scheduler */
+
+  --coroutine2-x: calc(100% - 310px); /* Right side with extra buffer */
+  --coroutine2-y: 320px; /* Much further below scheduler */
+
+  /* Position bottom row with MUCH larger spacing - massive gaps */
+  --ccb-manager-x: 20px; /* Left side with extra buffer */
+  --ccb-manager-y: 620px; /* Much further down - huge gap */
+
+  --context-switcher-x: calc(100% - 310px); /* Right side with extra buffer */
+  --context-switcher-y: 620px; /* Much further down - huge gap */
+}
+.classic-uml-container::before {
+  content: "CLASSIC UML CLASS DIAGRAM";
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: #2c3e50;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 5px;
+  font-size: 0.8em;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.uml-class {
+  background: #ffffff;
+  border: 2px solid #2c3e50;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 20; /* Higher z-index than children to ensure frame is visible */
+
+  /* Force the container to wrap around children */
+  display: flex;
+  flex-direction: column;
+
+  /* Flexible dimensions that adapt to content */
+  min-width: var(--class-min-width, 220px);
+  width: auto; /* Auto-size to content width */
+  height: auto; /* Auto-size to content height */
+
+  /* Ensure proper content containment */
+  overflow: visible; /* Allow for <<class>> label to show outside */
+  box-sizing: border-box;
+
+  /* Fallback dimensions for positioning calculations only */
+  --computed-width: 280px; /* Default approximate width */
+  --computed-height: 200px; /* Default approximate height */
+}
+
+.uml-class-header {
+  background: #34495e;
+  color: white;
+  padding: 12px; /* Controlled padding */
+  text-align: center;
+  font-weight: bold;
+  font-size: 1em;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  z-index: 15; /* Lower than parent container */
+
+  /* Fit within parent container */
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Don't shrink */
+
+  /* Text handling */
+  word-wrap: break-word;
+  line-height: 1.2;
+  overflow: hidden;
+
+  /* Dynamic positioning variables */
+  --header-top-y: var(--class-y, 0px);
+}
+
+.uml-class-header::before {
+  content: "<<class>>";
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c3e50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.7em;
+  font-style: italic;
+}
+
+.uml-attributes {
+  padding: 10px; /* Controlled padding to fit in container */
+  border-bottom: 1px solid #bdc3c7;
+  background: #f8f9fa;
+  z-index: 15; /* Lower than parent container */
+
+  /* Fit within parent container */
+  width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto; /* Don't grow or shrink, use natural content height */
+  min-height: 0; /* Allow shrinking */
+
+  /* Content handling */
+  overflow: visible; /* Allow content to show */
+  word-wrap: break-word;
+
+  /* Dynamic positioning variables */
+  --attributes-top-y: var(--header-bottom-y, 0px);
+
+  /* Calculate precise corner positions */
+  --attributes-top-left-x: var(--class-x, 0px);
+  --attributes-top-left-y: var(--attributes-top-y);
+  --attributes-top-right-x: calc(var(--class-x, 0px) + var(--computed-width));
+  --attributes-top-right-y: var(--attributes-top-y);
+  --attributes-bottom-left-x: var(--class-x, 0px);
+  --attributes-bottom-left-y: var(--attributes-bottom-y, 0px);
+  --attributes-bottom-right-x: calc(
+    var(--class-x, 0px) + var(--computed-width)
+  );
+  --attributes-bottom-right-y: var(--attributes-bottom-y, 0px);
+}
+
+.uml-attributes h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.85em;
+  color: #2c3e50;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.uml-attribute {
+  font-family: "Courier New", monospace;
+  font-size: 0.7em; /* Slightly smaller to fit better */
+  margin: 3px 0; /* Tighter spacing */
+  color: #2c3e50;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: block; /* Ensure proper block layout */
+}
+
+.uml-attribute.private::before {
+  content: "- ";
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.uml-attribute.public::before {
+  content: "+ ";
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.uml-attribute.protected::before {
+  content: "# ";
+  color: #f39c12;
+  font-weight: bold;
+}
+
+.uml-methods {
+  padding: 10px; /* Controlled padding to fit in container */
+  background: #ffffff;
+  z-index: 15; /* Lower than parent container */
+
+  /* Fit within parent container */
+  width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto; /* Don't grow or shrink, use natural content height */
+  min-height: 0; /* Allow shrinking */
+
+  /* Content handling */
+  overflow: visible; /* Allow content to show */
+  word-wrap: break-word;
+
+  /* Dynamic positioning variables */
+  --methods-top-y: var(
+    --attributes-bottom-y,
+    0px
+  ); /* Start where attributes end */
+
+  /* Calculate precise corner positions */
+  --methods-top-left-x: var(--class-x, 0px);
+  --methods-top-left-y: var(--methods-top-y);
+  --methods-top-right-x: calc(var(--class-x, 0px) + var(--computed-width));
+  --methods-top-right-y: var(--methods-top-y);
+  --methods-bottom-left-x: var(--class-x, 0px);
+  --methods-bottom-left-y: var(--methods-bottom-y, 0px);
+  --methods-bottom-right-x: calc(var(--class-x, 0px) + var(--computed-width));
+  --methods-bottom-right-y: var(--methods-bottom-y, 0px);
+}
+
+.uml-methods h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.85em;
+  color: #2c3e50;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.uml-method {
+  font-family: "Courier New", monospace;
+  font-size: 0.7em; /* Slightly smaller to fit better */
+  margin: 3px 0; /* Tighter spacing */
+  color: #2c3e50;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: block; /* Ensure proper block layout */
+}
+
+.uml-method.private::before {
+  content: "- ";
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.uml-method.public::before {
+  content: "+ ";
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.uml-method.protected::before {
+  content: "# ";
+  color: #f39c12;
+  font-weight: bold;
+}
+
+/* ===============================================
+   PROFESSIONAL UML DIAGRAM SYSTEM v2.0
+   =============================================== */
+
+/* Base UML line styling - improved for professional look */
+.uml-line {
+  position: absolute;
+  background: #2c3e50;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* UML Line types with proper styling */
+.uml-line.solid {
+  background: #2c3e50;
+}
+
+.uml-line.dashed {
+  background: linear-gradient(to right, #2c3e50 5px, transparent 5px);
+  background-size: 10px 2px;
+  background-repeat: repeat-x;
+  height: 2px !important;
+}
+
+/* Professional UML Arrow Heads */
+.uml-arrow-head {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* Composition Diamond (filled) - proper UML notation */
+.uml-arrow-head.composition {
+  width: 16px;
+  height: 16px;
+  background: #2c3e50;
+  transform: rotate(45deg);
+  transform-origin: center;
+  border: none;
+}
+
+/* Association Arrow (simple triangle) */
+.uml-arrow-head.association {
+  width: 0;
+  height: 0;
+  border-left: 10px solid #2c3e50;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+
+/* Dependency Arrow (open triangle) */
+.uml-arrow-head.dependency {
+  width: 0;
+  height: 0;
+  border-left: 10px solid #2c3e50;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+
+/* UML Relationship Labels with better styling */
+.uml-relationship-label {
+  position: absolute;
+  font-size: 11px;
+  color: #2c3e50;
+  background: white;
+  padding: 2px 6px;
+  z-index: 8;
+  font-style: italic;
+  border: 1px solid #ecf0f1;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.uml-multiplicity {
+  position: absolute;
+  font-size: 10px;
+  color: #2c3e50;
+  font-weight: bold;
+  z-index: 8;
+  background: white;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
+/* ===============================================
+   PRECISION UML CONNECTION SYSTEM v2.0
+   Connects to actual UML class boundaries, not wrapper boundaries
+   =============================================== */
+
+/* Base connection container */
+.uml-connection {
+  position: relative;
+  z-index: 5;
+}
+
+/* ===============================================
+   SCHEDULER TO COROUTINES - COMPOSITION
+   Connects from bottom center of Scheduler to top centers of Coroutines
+   =============================================== */
+
+/* Main vertical drop from Scheduler bottom */
+.uml-connection.scheduler-to-coroutines .vertical-main {
+  position: absolute;
+  left: calc(var(--scheduler-center-x) - 1px);
+  top: var(--scheduler-bottom-y);
+  width: 2px;
+  height: 50px;
+  background: #2c3e50;
+}
+
+/* Horizontal distribution line between coroutines */
+.uml-connection.scheduler-to-coroutines .horizontal-dist {
+  position: absolute;
+  left: var(--coroutine1-center-x);
+  top: calc(var(--scheduler-bottom-y) + 50px - 1px);
+  width: calc(var(--coroutine2-center-x) - var(--coroutine1-center-x));
+  height: 2px;
+  background: #2c3e50;
+}
+
+/* Vertical connector to Coroutine1 */
+.uml-connection.scheduler-to-coroutines .vertical-left {
+  position: absolute;
+  left: calc(var(--coroutine1-center-x) - 1px);
+  top: calc(var(--scheduler-bottom-y) + 50px);
+  width: 2px;
+  height: calc(var(--coroutine1-top-y) - var(--scheduler-bottom-y) - 50px);
+  background: #2c3e50;
+}
+
+/* Vertical connector to Coroutine2 */
+.uml-connection.scheduler-to-coroutines .vertical-right {
+  position: absolute;
+  left: calc(var(--coroutine2-center-x) - 1px);
+  top: calc(var(--scheduler-bottom-y) + 50px);
+  width: 2px;
+  height: calc(var(--coroutine2-top-y) - var(--scheduler-bottom-y) - 50px);
+  background: #2c3e50;
+}
+
+/* Composition diamonds at coroutine connection points */
+.uml-connection.scheduler-to-coroutines .composition-left {
+  position: absolute;
+  left: calc(var(--coroutine1-center-x) - 8px);
+  top: calc(var(--coroutine1-top-y) - 16px);
+}
+
+.uml-connection.scheduler-to-coroutines .composition-right {
+  position: absolute;
+  left: calc(var(--coroutine2-center-x) - 8px);
+  top: calc(var(--coroutine2-top-y) - 16px);
+}
+
+/* ===============================================
+   SCHEDULER TO CONTEXT SWITCHER - DEPENDENCY
+   L-shaped routing from Scheduler right to ContextSwitcher left
+   =============================================== */
+
+/* Horizontal line from Scheduler right edge */
+.uml-connection.scheduler-to-context .horizontal-main {
+  position: absolute;
+  left: var(--scheduler-wrapper-right);
+  top: calc(var(--scheduler-wrapper-center-y) - 1px);
+  width: calc(
+    var(--context-switcher-wrapper-left) - var(--scheduler-wrapper-right) - 30px
+  );
+  height: 2px;
+  background: linear-gradient(to right, #2c3e50 5px, transparent 5px);
+  background-size: 10px 2px;
+  background-repeat: repeat-x;
+}
+
+/* Vertical turn down */
+.uml-connection.scheduler-to-context .vertical-turn {
+  position: absolute;
+  left: calc(var(--context-switcher-wrapper-left) - 31px);
+  top: var(--scheduler-wrapper-center-y);
+  width: 2px;
+  height: calc(
+    var(--context-switcher-wrapper-upper-y) - var(--scheduler-wrapper-center-y)
+  );
+  background: linear-gradient(to bottom, #2c3e50 5px, transparent 5px);
+  background-size: 2px 10px;
+  background-repeat: repeat-y;
+}
+
+/* Final horizontal to ContextSwitcher (upper connection point) */
+.uml-connection.scheduler-to-context .horizontal-final {
+  position: absolute;
+  left: calc(var(--context-switcher-wrapper-left) - 30px);
+  top: calc(var(--context-switcher-wrapper-upper-y) - 1px);
+  width: 35px; /* Extend to connect with repositioned arrow */
+  height: 2px;
+  background: linear-gradient(to right, #2c3e50 5px, transparent 5px);
+  background-size: 10px 2px;
+  background-repeat: repeat-x;
+}
+
+/* Dependency arrow pointing into ContextSwitcher (upper connection point) */
+.uml-connection.scheduler-to-context .dependency-arrow {
+  position: absolute;
+  left: calc(
+    var(--context-switcher-wrapper-left) + 10px
+  ); /* Move 10px into wrapper so arrow tip touches edge */
+  top: calc(var(--context-switcher-wrapper-upper-y) - 6px);
+}
+
+/* ===============================================
+   CCB MANAGER TO CONTEXT SWITCHER - ASSOCIATION
+   Direct horizontal connection
+   =============================================== */
+
+/* Direct horizontal line */
+.uml-connection.ccb-to-context .horizontal-main {
+  position: absolute;
+  left: var(--ccb-manager-wrapper-right);
+  top: calc(var(--ccb-manager-wrapper-center-y) - 1px);
+  width: calc(
+    var(--context-switcher-wrapper-left) - var(--ccb-manager-wrapper-right) +
+      10px
+  ); /* Extend to connect with repositioned arrow */
+  height: 2px;
+  background: #2c3e50;
+}
+
+/* Association arrow pointing into ContextSwitcher */
+.uml-connection.ccb-to-context .association-arrow {
+  position: absolute;
+  left: calc(
+    var(--context-switcher-wrapper-left) + 10px
+  ); /* Move 10px into wrapper so arrow tip touches edge */
+  top: calc(var(--ccb-manager-wrapper-center-y) - 6px);
+}
+
+/* UML Class Wrapper System - LEGACY SUPPORT (Use uml-system.css for new components) */
+.uml-class-wrapper {
+  position: absolute;
+  width: 250px; /* Standard content width */
+  min-height: 220px; /* Standard minimum height */
+
+  /* Force field spacing - FUNCTIONAL invisible borders for collision detection */
+  padding: 25px; /* Creates actual space around content */
+  margin: 10px; /* Creates space between wrappers */
+  border: 3px solid transparent; /* Invisible but takes up space */
+
+  /* Visual appearance - completely invisible */
+  background: transparent;
+  border-color: transparent;
+
+  box-sizing: border-box; /* Include border and padding in total dimensions */
+}
+
+/* Generic positioning system using CSS custom properties */
+.uml-class-wrapper[data-position] {
+  left: var(--x);
+  top: var(--y);
+}
+
+/* Legacy positioning classes for backwards compatibility with SPACING PRESERVED */
+.uml-class-wrapper.scheduler-wrapper {
+  left: var(--scheduler-x);
+  top: var(--scheduler-y);
+}
+
+.uml-class-wrapper.coroutine1-wrapper {
+  left: var(--coroutine1-x);
+  top: var(--coroutine1-y);
+}
+
+.uml-class-wrapper.coroutine2-wrapper {
+  left: var(--coroutine2-x);
+  top: var(--coroutine2-y);
+}
+
+.uml-class-wrapper.ccb-manager-wrapper {
+  left: var(--ccb-manager-x);
+  top: var(--ccb-manager-y);
+}
+
+.uml-class-wrapper.context-switcher-wrapper {
+  left: var(--context-switcher-x);
+  top: var(--context-switcher-y);
+}
+
+/* 
+NEW GENERIC UML SYSTEM AVAILABLE!
+Import uml-system.css for the new generalized UML components:
+
+@import url('./uml-system.css');
+
+Features:
+- Configurable through CSS variables
+- Theme support (scheduler-theme, coroutine-theme, etc.)
+- Size variants (compact, large, extra-spacing)
+- Debug mode for development
+- Data-attribute positioning
+- Backwards compatible with existing coordinates
+
+Example usage:
+<div class="uml-wrapper" data-component="scheduler">
+  <div class="uml-class-generic scheduler-theme">
+    <div class="uml-header-generic">Scheduler</div>
+    <div class="uml-section-generic">
+      <h4 class="uml-section-title">Attributes</h4>
+      <div class="uml-item-generic private">currentCoroutine: Coroutine*</div>
+    </div>
+  </div>
+</div>
+*/
+
+/* UML classes inside wrappers are positioned relatively */
+.uml-class-wrapper .uml-class {
+  position: relative;
+  width: 100%; /* Fill wrapper content area */
+  height: 100%; /* Fill wrapper content area */
+  margin: 0; /* No margins - wrapper handles all spacing */
+  padding: 0; /* No extra padding - wrapper provides it */
+  box-sizing: border-box;
+
+  /* Ensure content fits within wrapper */
+  max-width: 240px; /* Match wrapper content width */
+  min-height: 160px; /* Minimum content height */
+}
+
+/* Update the classic-uml-container to define wrapper dimensions for relationships */
+.classic-uml-container {
+  /* Total wrapper dimensions for anchor point calculations */
+  /* Content: 250px + padding: 50px + border: 4px + margin: 20px = ~320px total */
+  --class-width: 320px; /* Total wrapper space needed - increased */
+  --class-height: 280px; /* Total wrapper height including padding - increased */
+  --spacing-buffer: 60px; /* Minimum spacing between wrapper boundaries - increased */
+}
+
+/* Connection lines removed - will be implemented later */
+
+/* Arrow styles removed - will be implemented later */
+
+/* Responsive adjustments for classic UML */
+@media (max-width: 768px) {
+  .classic-uml-container {
+    padding: 20px;
+    min-height: 500px;
+  }
+
+  .uml-class {
+    min-width: 140px;
+    position: relative !important;
+    margin: 20px auto;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+  }
+
+  .uml-line,
+  .uml-arrow-head,
+  .uml-relationship-label,
+  .uml-multiplicity {
+    display: none;
+  }
+}
+
+/* Assembly instruction visualization */
+.instruction-breakdown {
+  background: #2c3e50;
+  color: white;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  font-family: "Courier New", monospace;
+}
+
+.instruction-line {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #34495e;
+}
+
+.instruction-line:last-child {
+  border-bottom: none;
+}
+
+.instruction-opcode {
+  background: #e74c3c;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-right: 15px;
+  min-width: 80px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.instruction-operands {
+  flex: 1;
+  color: #3498db;
+}
+
+.instruction-description {
+  color: #bdc3c7;
+  font-size: 0.9em;
+  margin-left: 15px;
+  flex: 2;
+}
+
+/* Responsive enhancements */
+@media (max-width: 768px) {
+  .register-bank {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 15px;
+  }
+
+  .component-box {
+    margin: 10px 5px;
+    padding: 15px;
+  }
+
+  .advanced-uml-diagram {
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .context-switch-step {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .step-icon {
+    margin: 0 0 10px 0;
+  }
+}

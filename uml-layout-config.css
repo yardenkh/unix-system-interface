@@ -1,0 +1,78 @@
+/* UML Layout Configuration - Defines spacing and positioning rules */
+
+:root {
+  /* Standard wrapper dimensions */
+  --uml-wrapper-width: 250px;
+  --uml-wrapper-min-height: 220px;
+
+  /* Force field spacing - invisible but functional */
+  --uml-spacing-padding: 25px;
+  --uml-spacing-margin: 10px;
+  --uml-spacing-border: 3px;
+
+  /* Calculated total space needed per wrapper */
+  --uml-total-width: calc(
+    var(--uml-wrapper-width) + (var(--uml-spacing-padding) * 2) +
+      (var(--uml-spacing-margin) * 2) + (var(--uml-spacing-border) * 2)
+  );
+  --uml-total-height: calc(
+    var(--uml-wrapper-min-height) + (var(--uml-spacing-padding) * 2) +
+      (var(--uml-spacing-margin) * 2) + (var(--uml-spacing-border) * 2)
+  );
+
+  /* Grid system for automatic positioning */
+  --uml-grid-gap: 40px;
+  --uml-container-padding: 30px;
+}
+
+/* UML Wrapper with Configurable Spacing */
+.uml-positioned-wrapper {
+  position: absolute;
+
+  /* Content dimensions */
+  width: var(--wrapper-width, var(--uml-wrapper-width));
+  min-height: var(--wrapper-height, var(--uml-wrapper-min-height));
+
+  /* Force field spacing - creates invisible boundaries */
+  padding: var(--wrapper-padding, var(--uml-spacing-padding));
+  margin: var(--wrapper-margin, var(--uml-spacing-margin));
+  border: var(--wrapper-border, var(--uml-spacing-border)) solid transparent;
+
+  /* Always invisible */
+  background: transparent;
+  border-color: transparent;
+
+  /* Positioning using custom properties */
+  left: var(--x, 0);
+  top: var(--y, 0);
+
+  box-sizing: border-box;
+}
+
+/* Preset configurations for different component sizes */
+.uml-positioned-wrapper.compact {
+  --wrapper-width: 200px;
+  --wrapper-height: 180px;
+  --wrapper-padding: 20px;
+  --wrapper-margin: 8px;
+}
+
+.uml-positioned-wrapper.large {
+  --wrapper-width: 300px;
+  --wrapper-height: 260px;
+  --wrapper-padding: 30px;
+  --wrapper-margin: 15px;
+}
+
+.uml-positioned-wrapper.extra-spacing {
+  --wrapper-padding: 40px;
+  --wrapper-margin: 20px;
+  --wrapper-border: 5px;
+}
+
+/* Debug mode - makes spacing visible */
+.uml-positioned-wrapper.debug {
+  background: rgba(52, 152, 219, 0.1);
+  border-color: rgba(52, 152, 219, 0.3);
+  border-style: dashed;
+}

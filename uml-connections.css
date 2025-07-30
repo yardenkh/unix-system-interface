@@ -1,0 +1,142 @@
+/* UML Connection Builder - JavaScript helpers and CSS for automatic connections */
+
+/* === CONNECTION GENERATOR CLASSES === */
+
+/* Automatic connection builder - generates lines and arrows between components */
+.uml-connection-builder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: var(--uml-relationship-z);
+}
+
+/* Smart path finding for connections */
+.uml-connection {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Three-segment connection (common UML pattern) */
+.uml-connection.three-segment {
+  /* Will contain 3 lines: vertical, horizontal, vertical */
+}
+
+.uml-connection.three-segment .segment-1 {
+  /* First vertical segment */
+  position: absolute;
+  width: var(--uml-line-width);
+  background: var(--line-color, var(--uml-line-color));
+}
+
+.uml-connection.three-segment .segment-2 {
+  /* Horizontal segment */
+  position: absolute;
+  height: var(--uml-line-width);
+  background: var(--line-color, var(--uml-line-color));
+}
+
+.uml-connection.three-segment .segment-3 {
+  /* Second vertical segment */
+  position: absolute;
+  width: var(--uml-line-width);
+  background: var(--line-color, var(--uml-line-color));
+}
+
+/* === PREDEFINED CONNECTIONS === */
+
+/* Scheduler controls Coroutines */
+.connection-scheduler-coroutine1 {
+  /* Vertical line down from scheduler */
+  left: calc(var(--scheduler-x) + 125px);
+  top: calc(var(--scheduler-y) + 200px);
+  width: 2px;
+  height: calc(var(--coroutine1-y) - var(--scheduler-y) - 200px + 20px);
+  background: var(--uml-association-color);
+}
+
+.connection-scheduler-coroutine1::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: -3px;
+  border-left: 8px solid var(--uml-association-color);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.connection-scheduler-coroutine2 {
+  /* Angled connection to coroutine2 */
+  left: calc(var(--scheduler-x) + 125px);
+  top: calc(var(--scheduler-y) + 200px);
+  width: calc(var(--coroutine2-x) + 125px - var(--scheduler-x) - 125px);
+  height: 2px;
+  background: var(--uml-association-color);
+  transform-origin: left center;
+  transform: rotate(
+    calc(
+      atan2(
+        var(--coroutine2-y) - var(--scheduler-y) - 200px,
+        var(--coroutine2-x) + 125px - var(--scheduler-x) - 125px
+      )
+    )
+  );
+}
+
+/* Context switching relationships */
+.connection-coroutine-context {
+  /* Lines from coroutines to context switcher */
+}
+
+/* === CONNECTION LABELS === */
+.connection-label {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: 500;
+  color: #2c3e50;
+  white-space: nowrap;
+  z-index: calc(var(--uml-relationship-z) + 3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Position labels along connections */
+.connection-label.manages {
+  background: linear-gradient(135deg, #e8f5e8, #d4edda);
+  border-color: var(--uml-association-color);
+}
+
+.connection-label.uses {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border-color: var(--uml-dependency-color);
+}
+
+.connection-label.creates {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  border-color: var(--uml-composition-color);
+}
+
+/* === RESPONSIVE CONNECTIONS === */
+@media (max-width: 768px) {
+  /* Hide connections on mobile for clarity */
+  .uml-connection,
+  .uml-relationship,
+  .connection-label {
+    display: none;
+  }
+}
+
+/* === DEBUG MODE FOR CONNECTIONS === */
+.uml-connection-builder.debug .uml-connection {
+  border: 1px dashed rgba(255, 0, 0, 0.3);
+}
+
+.uml-connection-builder.debug .connection-label {
+  background: rgba(255, 255, 0, 0.8) !important;
+  border-color: red !important;
+}

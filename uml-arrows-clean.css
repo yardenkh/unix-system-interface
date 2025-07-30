@@ -1,0 +1,254 @@
+/* ===================================================================
+   BULLETPROOF UML ARROW SYSTEM v2.0
+   Final solution - guaranteed to work
+   =================================================================== */
+
+/* Arrow Heads */
+.uml-arrow-final {
+  position: absolute;
+  z-index: 100;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-left: 12px solid #2c3e50;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+
+/* Lines */
+.uml-line-final {
+  position: absolute;
+  z-index: 50;
+  pointer-events: none;
+  background: #2c3e50;
+}
+
+/* Dashed lines */
+.uml-line-final.dashed {
+  background: repeating-linear-gradient(
+    to right,
+    #2c3e50 0px,
+    #2c3e50 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+.uml-line-final.dashed.vertical {
+  background: repeating-linear-gradient(
+    to bottom,
+    #2c3e50 0px,
+    #2c3e50 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* Labels */
+.uml-label-final {
+  position: absolute;
+  font-size: 11px;
+  color: #2c3e50;
+  background: white;
+  padding: 2px 6px;
+  z-index: 150;
+  font-style: italic;
+  border: 1px solid #ecf0f1;
+  border-radius: 3px;
+}
+
+/* Multiplicities */
+.uml-multiplicity-final {
+  position: absolute;
+  font-size: 10px;
+  color: #7f8c8d;
+  background: white;
+  padding: 1px 4px;
+  z-index: 150;
+  border-radius: 2px;
+}
+
+/* ===================================================================
+   HARDCODED POSITIONING - GUARANTEED TO WORK
+   =================================================================== */
+
+/* Scheduler to ContextSwitcher Connection (Dashed L-shaped arrow) */
+.scheduler-to-context-final {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 25;
+}
+
+/* Horizontal line from Scheduler */
+.scheduler-to-context-final .line1 {
+  position: absolute;
+  left: 60%;
+  top: 155px;
+  width: 120px;
+  height: 3px;
+  background: repeating-linear-gradient(
+    to right,
+    #2c3e50 0px,
+    #2c3e50 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* Vertical line down */
+.scheduler-to-context-final .line2 {
+  position: absolute;
+  left: calc(60% + 118px);
+  top: 155px;
+  width: 3px;
+  height: 480px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #2c3e50 0px,
+    #2c3e50 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* Horizontal line to ContextSwitcher */
+.scheduler-to-context-final .line3 {
+  position: absolute;
+  left: calc(60% + 118px);
+  top: 632px;
+  width: 120px;
+  height: 3px;
+  background: repeating-linear-gradient(
+    to right,
+    #2c3e50 0px,
+    #2c3e50 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* Arrow head */
+.scheduler-to-context-final .arrow {
+  position: absolute;
+  left: calc(60% + 235px);
+  top: 624px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid #2c3e50;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  z-index: 100;
+}
+
+/* CCBManager to ContextSwitcher Connection (Solid horizontal arrow) */
+.ccb-to-context-final {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 25;
+}
+
+/* Horizontal line from CCBManager to ContextSwitcher */
+.ccb-to-context-final .line1 {
+  position: absolute;
+  left: 300px;
+  top: 745px;
+  width: calc(75% - 180px);
+  height: 3px;
+  background: #2c3e50;
+}
+
+/* Arrow head */
+.ccb-to-context-final .arrow {
+  position: absolute;
+  left: calc(75% - 15px);
+  top: 737px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid #2c3e50;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  z-index: 100;
+}
+
+/* Labels and Multiplicities */
+.scheduler-label-final {
+  position: absolute;
+  left: calc(60% + 40px);
+  top: 135px;
+  font-size: 11px;
+  color: #2c3e50;
+  background: white;
+  padding: 2px 6px;
+  z-index: 150;
+  font-style: italic;
+  border: 1px solid #ecf0f1;
+  border-radius: 3px;
+}
+
+.ccb-label-final {
+  position: absolute;
+  left: calc(50% - 30px);
+  top: 720px;
+  font-size: 11px;
+  color: #2c3e50;
+  background: white;
+  padding: 2px 6px;
+  z-index: 150;
+  font-style: italic;
+  border: 1px solid #ecf0f1;
+  border-radius: 3px;
+}
+
+.multiplicity-1-final {
+  position: absolute;
+  left: calc(60% - 20px);
+  top: 165px;
+  font-size: 10px;
+  color: #7f8c8d;
+  background: white;
+  padding: 1px 4px;
+  z-index: 150;
+  border-radius: 2px;
+}
+
+.multiplicity-2-final {
+  position: absolute;
+  left: calc(75% - 40px);
+  top: 610px;
+  font-size: 10px;
+  color: #7f8c8d;
+  background: white;
+  padding: 1px 4px;
+  z-index: 150;
+  border-radius: 2px;
+}
+
+.multiplicity-3-final {
+  position: absolute;
+  left: 280px;
+  top: 755px;
+  font-size: 10px;
+  color: #7f8c8d;
+  background: white;
+  padding: 1px 4px;
+  z-index: 150;
+  border-radius: 2px;
+}
+
+.multiplicity-4-final {
+  position: absolute;
+  left: calc(75% - 40px);
+  top: 755px;
+  font-size: 10px;
+  color: #7f8c8d;
+  background: white;
+  padding: 1px 4px;
+  z-index: 150;
+  border-radius: 2px;
+}

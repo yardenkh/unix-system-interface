@@ -1,0 +1,266 @@
+/* UML Decorative Elements - Stereotypes, notes, and visual enhancements */
+
+/* === STEREOTYPES AND ANNOTATIONS === */
+.uml-stereotype {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--stereotype-bg, #34495e);
+  color: var(--stereotype-color, white);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7em;
+  font-style: italic;
+  white-space: nowrap;
+  z-index: calc(var(--uml-label-z) + 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Stereotype variants */
+.uml-stereotype.interface {
+  --stereotype-bg: #8e44ad;
+}
+
+.uml-stereotype.abstract {
+  --stereotype-bg: #e67e22;
+}
+
+.uml-stereotype.singleton {
+  --stereotype-bg: #27ae60;
+}
+
+.uml-stereotype.utility {
+  --stereotype-bg: #3498db;
+}
+
+/* === UML NOTES === */
+.uml-note {
+  position: absolute;
+  background: #fff9c4;
+  border: 1px solid #f1c40f;
+  border-left: 4px solid #f39c12;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  line-height: 1.4;
+  max-width: 200px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  z-index: calc(var(--uml-relationship-z) + 5);
+}
+
+.uml-note::before {
+  content: "📝";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #f39c12;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* Note connecting line */
+.uml-note-connector {
+  position: absolute;
+  width: 1px;
+  background: #f39c12;
+  border-left: 1px dashed #f39c12;
+}
+
+/* === PACKAGE CONTAINERS === */
+.uml-package {
+  position: absolute;
+  border: 2px solid #95a5a6;
+  background: rgba(149, 165, 166, 0.05);
+  border-radius: 8px;
+  padding: 30px 20px 20px 20px;
+  z-index: 1; /* Behind other components */
+}
+
+.uml-package::before {
+  content: attr(data-package-name);
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  background: #95a5a6;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+/* === INTERFACE LOLLIPOPS === */
+.uml-interface-lollipop {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--interface-color, #8e44ad);
+  border-radius: 50%;
+  background: white;
+  z-index: calc(var(--uml-relationship-z) + 1);
+}
+
+.uml-interface-lollipop::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: var(--interface-color, #8e44ad);
+  border-radius: 50%;
+}
+
+/* Lollipop stick */
+.uml-interface-lollipop::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 1px;
+  background: var(--interface-color, #8e44ad);
+}
+
+/* === CONSTRAINT BOXES === */
+.uml-constraint {
+  position: absolute;
+  background: rgba(52, 73, 94, 0.1);
+  border: 1px solid #34495e;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.7em;
+  font-style: italic;
+  color: #34495e;
+  white-space: nowrap;
+  z-index: calc(var(--uml-relationship-z) + 3);
+}
+
+.uml-constraint::before {
+  content: "{";
+}
+
+.uml-constraint::after {
+  content: "}";
+}
+
+/* === VISIBILITY INDICATORS === */
+.uml-visibility-legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.7em;
+  z-index: calc(var(--uml-label-z) + 10);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.uml-visibility-legend h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.8em;
+  color: #2c3e50;
+}
+
+.uml-visibility-item {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.uml-visibility-symbol {
+  font-weight: bold;
+  margin-right: 8px;
+  width: 15px;
+}
+
+.uml-visibility-symbol.public {
+  color: var(--uml-public-color);
+}
+
+.uml-visibility-symbol.private {
+  color: var(--uml-private-color);
+}
+
+.uml-visibility-symbol.protected {
+  color: var(--uml-protected-color);
+}
+
+/* === COMPOSITION INDICATORS === */
+.uml-composition-diamond {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--uml-composition-color);
+  transform: rotate(45deg);
+  border: 1px solid var(--uml-line-color);
+  z-index: calc(var(--uml-relationship-z) + 2);
+}
+
+.uml-aggregation-diamond {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid var(--uml-aggregation-color);
+  transform: rotate(45deg);
+  z-index: calc(var(--uml-relationship-z) + 2);
+}
+
+/* === ACTIVITY INDICATORS === */
+.uml-active-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background: #27ae60;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  z-index: calc(var(--uml-class-z) + 1);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+/* === GROUPING AND LAYERS === */
+.uml-layer-background {
+  position: absolute;
+  background: rgba(52, 152, 219, 0.05);
+  border: 1px dashed rgba(52, 152, 219, 0.3);
+  border-radius: 10px;
+  z-index: 0;
+}
+
+.uml-layer-label {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  background: rgba(52, 152, 219, 0.1);
+  color: #2980b9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: bold;
+  z-index: 1;
+}

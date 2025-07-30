@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Coroutines in x86-64 Assembly</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="uml-arrows-clean.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="main-title">Coroutines in x86-64 Assembly</h1>
+      <div class="author">
+        <em>This document was made by yarden kahanovitch</em>
+      </div>
+
+      <h5 class="subtitle">
+        Understanding Cooperative Multitasking with Assembly Language
+      </h5>
+      <h5 class="subtitle">
+        A Deep Dive into Context Switching and Scheduler Implementation
+      </h5>
+
+      <div class="content-section">
+        <h2>What Are Coroutines?</h2>
+
+        <p>
+          Imagine you're a chef in a busy kitchen. You start making soup, but
+          while it's simmering, you can't just stand there waiting. You
+          voluntarily pause your soup-making, switch to preparing salad, then
+          maybe return to the soup when you choose. This is exactly how
+          coroutines work - they're a programming abstraction for
+          <strong>cooperative multitasking</strong> where different routines
+          voluntarily "pause" and "resume" their execution.
+        </p>
+
+        <p>
+          Unlike threads, coroutines run in user space (not managed by the OS
+          kernel) and explicitly yield control back to a scheduler, making them
+          efficient for interleaving code without full-blown context switches or
+          preemptive scheduling.
+        </p>
+
+        <div class="info-box">
+          <h4>Real-World Example Implementation</h4>
+          <p>
+            In our x86-64 Assembly implementation (AT&T syntax), we demonstrate
+            two coroutines working together:
+          </p>
+          <ul>
+            <li>
+              <strong>func1:</strong> Prints numbers 1 to 10, one number per
+              quantum
+            </li>
+            <li>
+              <strong>func2:</strong> Prints letters 'a' to 'j', one letter per
+              quantum
+            </li>
+          </ul>
+          <p>
+            Both coroutines take turns executing by yielding after every 4
+            instructions, controlled by a scheduler using a quantum-based
+            system.
+          </p>
+        </div>
+
+        <div class="system-call-diagram">
+          <div class="user-layer">🔄 Cooperative Multitasking</div>
+          <div class="flow-step">↓ Voluntary yielding</div>
+          <div class="user-layer">⚙️ Coroutine 1: Numbers</div>
+          <div class="flow-step">↓ Quantum expires</div>
+          <div class="kernel-layer">📋 Scheduler</div>
+          <div class="flow-step">↓ Context switch</div>
+          <div class="user-layer">🔤 Coroutine 2: Letters</div>
+          <div class="flow-step">↓ Round-robin</div>
+          <div class="kernel-layer">🔁 Repeat cycle</div>
+        </div>
+
+        <h2>Coroutine State and Context</h2>
+
+        <p>
+          A coroutine must be able to stop (yield) and later resume execution as
+          if nothing happened. This is the fundamental challenge that makes
+          coroutines both powerful and complex. To achieve this seamless
+          pause-and-resume capability, we need to save and restore all the state
+          that would change during execution.
+        </p>
+
+        <div class="explanation-box">
+          <h4>Critical State Components</h4>
+          <p>
+            When a coroutine yields, the following state must be preserved for
+            perfect restoration:
+          </p>
+          <ol>
+            <li>
+              <strong>Stack Content:</strong> Local variables, function call
+              state, return addresses
+            </li>
+            <li>
+              <strong>CPU Registers:</strong> General purpose registers (rax,
+              rbx, rcx, rdx, rsi, rdi, r8-r15)
+            </li>
+            <li>
+              <strong>Processor Flags (RFLAGS):</strong> Zero flag, carry flag,
+              sign flag, overflow flag
+            </li>
+            <li>
+              <strong>Stack Pointer (RSP):</strong> Current position in the
+              coroutine's private stack
+            </li>
+            <li>
+              <strong>Instruction Pointer (RIP):</strong> Exact location where
+              execution should resume
+            </li>
+          </ol>
+          <p>
+            <em
+              >This complete state preservation is called
+              <strong>context switching</strong>.</em
+            >
+          </p>
+        </div>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>Context Switching Visualization:</h4>
+            <p>
+              Think of context switching like bookmarking multiple books you're
+              reading simultaneously. Each bookmark (context) saves exactly
+              where you left off in each book (coroutine), so you can seamlessly
+              continue reading from the right place when you return.
+            </p>
+
+            <div class="info-box">
+              <h4>Why This Level of Detail Matters</h4>
+              <ul>
+                <li>
+                  <strong>Precision:</strong> Missing even one register could
+                  cause data corruption
+                </li>
+                <li>
+                  <strong>Transparency:</strong> Coroutines must be unaware of
+                  being paused
+                </li>
+                <li>
+                  <strong>Performance:</strong> Efficient context switching
+                  enables responsive systems
+                </li>
+                <li>
+                  <strong>Correctness:</strong> Incorrect restoration leads to
+                  undefined behavior
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-comment"
+              ># Context Save Operation (Conceptual)</span
+            >
+            <span class="asm-section"
+              ># Save all general-purpose registers</span
+            >
+            <span class="asm-instruction">movq %rax, ccb_current+0(%rip)</span>
+            <span class="asm-instruction">movq %rbx, ccb_current+8(%rip)</span>
+            <span class="asm-instruction">movq %rcx, ccb_current+16(%rip)</span>
+            <span class="asm-instruction">movq %rdx, ccb_current+24(%rip)</span>
+
+            <span class="asm-comment"># Save stack pointer</span>
+            <span class="asm-instruction">movq %rsp, ccb_current+32(%rip)</span>
+
+            <span class="asm-comment"># Save processor flags</span>
+            <span class="asm-instruction">pushfq</span>
+            <span class="asm-instruction">popq %rax</span>
+            <span class="asm-instruction">movq %rax, ccb_current+40(%rip)</span>
+
+            <span class="asm-comment"># Context Restore Operation</span>
+            <span class="asm-instruction">movq ccb_target+0(%rip), %rax</span>
+            <span class="asm-instruction">movq ccb_target+8(%rip), %rbx</span>
+            <span class="asm-instruction">movq ccb_target+16(%rip), %rcx</span>
+            <span class="asm-instruction">movq ccb_target+24(%rip), %rdx</span>
+
+            <span class="asm-comment"># Restore stack pointer</span>
+            <span class="asm-instruction">movq ccb_target+32(%rip), %rsp</span>
+
+            <span class="asm-comment"># Restore processor flags</span>
+            <span class="asm-instruction">movq ccb_target+40(%rip), %rax</span>
+            <span class="asm-instruction">pushq %rax</span>
+            <span class="asm-instruction">popfq</span>
+          </div>
+        </div>
+
+        <h2>The Scheduler: Orchestrating Cooperative Execution</h2>
+
+        <p>
+          The scheduler is the conductor of our coroutine orchestra. It's not
+          just another function - it's a special entity that manages which
+          coroutine should run next, when to switch between them, and how to
+          maintain the illusion that all coroutines are running simultaneously.
+        </p>
+
+        <div class="info-box">
+          <h4>Scheduler Responsibilities & Algorithm</h4>
+          <ul>
+            <li>
+              <strong>Round-Robin Selection:</strong> Picks the next coroutine
+              in cyclic order
+            </li>
+            <li>
+              <strong>Self-Preservation:</strong> Saves its own state before
+              switching away
+            </li>
+            <li>
+              <strong>Context Restoration:</strong> Restores chosen coroutine's
+              complete state
+            </li>
+            <li>
+              <strong>Quantum Management:</strong> Resets the instruction
+              counter for fair execution
+            </li>
+            <li>
+              <strong>Termination Detection:</strong> Monitors coroutine
+              completion flags
+            </li>
+          </ul>
+        </div>
+
+        <p>
+          The yield mechanism operates on a
+          <strong>"quantum counter"</strong> system. Each coroutine decrements
+          this counter with every instruction; when it reaches zero, the
+          coroutine automatically yields control to the scheduler. This ensures
+          fair time distribution among all coroutines.
+        </p>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <h4>Scheduler Decision Logic:</h4>
+            <!-- prettier-ignore -->
+            <div class="c-codeblock"><span class="c-comment">// Simplified Scheduler Logic</span>
+<span class="c-keyword">while</span> (!all_coroutines_done) {
+    <span class="c-comment">// Check if current coroutine is done</span>
+    <span class="c-keyword">if</span> (current_coroutine->done) {
+        <span class="c-function">mark_as_finished</span>(current_coroutine);
+    }
+    
+    <span class="c-comment">// Find next active coroutine</span>
+    next_coroutine = <span class="c-function">find_next_active</span>();
+    
+    <span class="c-keyword">if</span> (next_coroutine == <span class="c-constant">NULL</span>) {
+        <span class="c-keyword">break</span>; <span class="c-comment">// All done</span>
+    }
+    
+    <span class="c-comment">// Reset quantum for fair execution</span>
+    quantum_counter = <span class="c-number">4</span>;
+    
+    <span class="c-comment">// Switch to selected coroutine</span>
+    <span class="c-function">context_switch</span>(scheduler, next_coroutine);
+}</div>
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Scheduler Flow</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Scheduler wakes up
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">2</div>
+                All coroutines done?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Yes</div>
+                  <div class="flow-terminator">
+                    <div class="step-number">3a</div>
+                    Exit program
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">No</div>
+                  <div class="flow-process">
+                    <div class="step-number">3b</div>
+                    Select next coroutine
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-arrow">↓</div>
+              <div class="flow-process">
+                <div class="step-number">4</div>
+                Reset quantum = 4
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-process">
+                <div class="step-number">5</div>
+                Save scheduler context
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-process">
+                <div class="step-number">6</div>
+                Restore coroutine context
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-step">
+                <div class="step-number">7</div>
+                Jump to coroutine
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2>Data Structures: The Foundation of Coroutine Management</h2>
+
+        <h3>Coroutine Control Blocks (CCBs)</h3>
+
+        <p>
+          Each coroutine (including the scheduler) has a
+          <strong>Coroutine Control Block (CCB)</strong> - a data structure that
+          serves as its "memory" when it's not running. Think of a CCB as a
+          snapshot of everything the coroutine needs to continue exactly where
+          it left off.
+        </p>
+
+        <div class="explanation-box">
+          <h4>CCB Structure and Layout</h4>
+          <p>
+            Each CCB is a precisely organized 128-byte structure containing:
+          </p>
+          <ul>
+            <li><strong>Offset 0-7:</strong> rbx register value</li>
+            <li><strong>Offset 8-15:</strong> rsp (stack pointer)</li>
+            <li><strong>Offset 16-23:</strong> rbp (base pointer)</li>
+            <li><strong>Offset 24-31:</strong> r12 register</li>
+            <li><strong>Offset 32-39:</strong> r13 register</li>
+            <li><strong>Offset 40-47:</strong> r14 register</li>
+            <li><strong>Offset 48-55:</strong> r15 register</li>
+            <li><strong>Offset 56-63:</strong> RFLAGS (processor flags)</li>
+            <li>
+              <strong>Offset 64-71:</strong> RIP (instruction pointer/function
+              address)
+            </li>
+            <li>
+              <strong>Offset 72-127:</strong> Reserved for future extensions
+            </li>
+          </ul>
+        </div>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <p>
+              CCBs are allocated in the .data section for persistent storage:
+            </p>
+
+            <div class="info-box">
+              <h4>Memory Layout Strategy</h4>
+              <ul>
+                <li>
+                  <strong>Static Allocation:</strong> CCBs use .data section for
+                  persistence
+                </li>
+                <li>
+                  <strong>Fixed Size:</strong> 128 bytes per CCB ensures
+                  predictable memory layout
+                </li>
+                <li>
+                  <strong>Alignment:</strong> Proper memory alignment for
+                  efficient access
+                </li>
+                <li>
+                  <strong>Scalability:</strong> Easy to add more coroutines by
+                  declaring more CCBs
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-section">.section .data</span>
+
+            <span class="asm-comment"># Scheduler's control block</span>
+            <span class="asm-data">ccb_scheduler: .space 128</span>
+
+            <span class="asm-comment"># Coroutine 1's control block</span>
+            <span class="asm-data">ccb_coroutine1: .space 128</span>
+
+            <span class="asm-comment"># Coroutine 2's control block</span>
+            <span class="asm-data">ccb_coroutine2: .space 128</span>
+
+            <span class="asm-comment"># Pointer to currently active CCB</span>
+            <span class="asm-data">current_ccb: .quad 0</span>
+
+            <span class="asm-comment"># Global quantum counter</span>
+            <span class="asm-data">quantum: .long 4</span>
+          </div>
+        </div>
+
+        <h3>Private Stack Spaces</h3>
+
+        <p>
+          Each coroutine requires its own private stack space to maintain local
+          variables and function call state independently. Stack isolation
+          prevents coroutines from interfering with each other's data.
+        </p>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <div class="explanation-box">
+              <h4>Stack Management Strategy</h4>
+              <ul>
+                <li>
+                  <strong>Isolation:</strong> Each coroutine has a separate 4KB
+                  stack
+                </li>
+                <li>
+                  <strong>Top-Down Growth:</strong> Stacks grow downward from
+                  high addresses
+                </li>
+                <li>
+                  <strong>Overflow Protection:</strong> Fixed size prevents
+                  stack overflow
+                </li>
+                <li>
+                  <strong>Context Switching:</strong> RSP register switches
+                  between stack tops
+                </li>
+              </ul>
+            </div>
+
+            <h4>Stack Pointer Management:</h4>
+            <p>
+              When switching coroutines, the RSP register is updated to point to
+              the new coroutine's stack top, ensuring complete memory isolation.
+            </p>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-section">.section .bss</span>
+
+            <span class="asm-comment"
+              ># Stack for coroutine 1 (4096 bytes)</span
+            >
+            <span class="asm-data">stack1: .space 4096</span>
+
+            <span class="asm-comment"
+              ># Stack for coroutine 2 (4096 bytes)</span
+            >
+            <span class="asm-data">stack2: .space 4096</span>
+
+            <span class="asm-comment"># Stack initialization example</span>
+            <span class="asm-section">.section .text</span>
+            <span class="asm-label">init_stacks:</span>
+            <span class="asm-comment"># Set up coroutine 1 stack</span>
+            <span class="asm-instruction">leaq stack1(%rip), %rax</span>
+            <span class="asm-instruction">addq $4096, %rax # Point to top</span>
+            <span class="asm-instruction"
+              >movq %rax, ccb_coroutine1+8(%rip)</span
+            >
+
+            <span class="asm-comment"># Set up coroutine 2 stack</span>
+            <span class="asm-instruction">leaq stack2(%rip), %rax</span>
+            <span class="asm-instruction">addq $4096, %rax # Point to top</span>
+            <span class="asm-instruction"
+              >movq %rax, ccb_coroutine2+8(%rip)</span
+            >
+          </div>
+        </div>
+
+        <h3>Global State Variables</h3>
+
+        <div class="info-box">
+          <h4>Essential Global Variables</h4>
+          <ul>
+            <li>
+              <strong>current_ccb:</strong> Pointer to the CCB of currently
+              executing entity
+            </li>
+            <li>
+              <strong>counter1, counter2:</strong> Progress counters for each
+              coroutine
+            </li>
+            <li>
+              <strong>done1, done2:</strong> Completion flags indicating
+              coroutine termination
+            </li>
+            <li>
+              <strong>quantum:</strong> Remaining instruction count before yield
+            </li>
+          </ul>
+        </div>
+
+        <h2>Program Flow & Initialization</h2>
+
+        <h3>System Startup and Bootstrap Process</h3>
+
+        <p>
+          The initialization process is critical for establishing the coroutine
+          environment. Every component must be properly configured before any
+          coroutine can begin execution.
+        </p>
+
+        <div class="explanation-box">
+          <h4>Bootstrap Sequence</h4>
+          <p>
+            The _start section initializes the entire coroutine system in a
+            specific order:
+          </p>
+          <ol>
+            <li>
+              <strong>Scheduler CCB Setup:</strong> Establish the scheduler as
+              the initial active entity
+            </li>
+            <li>
+              <strong>Coroutine CCB Configuration:</strong> Initialize each
+              coroutine's control block
+            </li>
+            <li>
+              <strong>Stack Assignment:</strong> Assign private stack spaces to
+              each coroutine
+            </li>
+            <li>
+              <strong>Entry Point Registration:</strong> Set function pointers
+              for coroutine starting addresses
+            </li>
+            <li>
+              <strong>Global State Initialization:</strong> Reset counters and
+              flags
+            </li>
+            <li>
+              <strong>Quantum Setup:</strong> Initialize the instruction counter
+            </li>
+          </ol>
+        </div>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>Step 1: Scheduler Initialization</h4>
+            <p>
+              The scheduler CCB is configured first, making it the "current"
+              entity. This establishes the scheduler as the starting point of
+              execution.
+            </p>
+
+            <div class="info-box">
+              <h4>Why Scheduler First?</h4>
+              <ul>
+                <li>
+                  <strong>Control Flow:</strong> Scheduler manages all
+                  transitions
+                </li>
+                <li>
+                  <strong>Bootstrap Safety:</strong> Ensures valid current_ccb
+                  pointer
+                </li>
+                <li>
+                  <strong>Consistent State:</strong> Provides predictable
+                  starting conditions
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-section">.section .text</span>
+            <span class="asm-label">.global _start</span>
+            <span class="asm-label">_start:</span>
+
+            <span class="asm-comment"
+              ># Initialize scheduler as current entity</span
+            >
+            <span class="asm-instruction">leaq ccb_scheduler(%rip), %rax</span>
+            <span class="asm-instruction">movq %rax, current_ccb(%rip)</span>
+
+            <span class="asm-comment"># Initialize global counters</span>
+            <span class="asm-instruction">movl $1, counter1(%rip)</span>
+            <span class="asm-instruction">movl $1, counter2(%rip)</span>
+
+            <span class="asm-comment"># Clear completion flags</span>
+            <span class="asm-instruction">movl $0, done1(%rip)</span>
+            <span class="asm-instruction">movl $0, done2(%rip)</span>
+
+            <span class="asm-comment"># Set initial quantum</span>
+            <span class="asm-instruction">movl $4, quantum(%rip)</span>
+          </div>
+        </div>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>Step 2: Coroutine 1 Configuration</h4>
+            <p>
+              Each coroutine's CCB is carefully configured with its stack
+              pointer and entry point. The stack pointer points to the top of
+              the allocated stack space.
+            </p>
+
+            <div class="explanation-box">
+              <h4>Critical Configuration Details</h4>
+              <ul>
+                <li>
+                  <strong>Stack Top Calculation:</strong> Add 4096 to base
+                  address for top
+                </li>
+                <li>
+                  <strong>Function Entry Point:</strong> Store address where
+                  coroutine begins
+                </li>
+                <li>
+                  <strong>CCB Offset Accuracy:</strong> Use correct byte offsets
+                  for each field
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-comment"># Configure Coroutine 1</span>
+            <span class="asm-instruction">leaq stack1(%rip), %rax</span>
+            <span class="asm-instruction"
+              >addq $4096, %rax # Calculate stack top</span
+            >
+            <span class="asm-instruction"
+              >movq %rax, ccb_coroutine1+8(%rip) # Save RSP</span
+            >
+
+            <span class="asm-comment"># Set function entry point</span>
+            <span class="asm-instruction"
+              >movq $func1, ccb_coroutine1+64(%rip) # Save RIP</span
+            >
+
+            <span class="asm-comment"># Configure Coroutine 2</span>
+            <span class="asm-instruction">leaq stack2(%rip), %rax</span>
+            <span class="asm-instruction"
+              >addq $4096, %rax # Calculate stack top</span
+            >
+            <span class="asm-instruction"
+              >movq %rax, ccb_coroutine2+8(%rip) # Save RSP</span
+            >
+
+            <span class="asm-comment"># Set function entry point</span>
+            <span class="asm-instruction"
+              >movq $func2, ccb_coroutine2+64(%rip) # Save RIP</span
+            >
+
+            <span class="asm-comment"
+              ># Jump to scheduler to begin execution</span
+            >
+            <span class="asm-instruction">jmp scheduler</span>
+          </div>
+        </div>
+
+        <h2>Coroutine Execution Flow</h2>
+
+        <h3>Understanding func1 and func2: The Working Coroutines</h3>
+
+        <p>
+          Each coroutine function implements a simple but complete workflow that
+          demonstrates all the essential coroutine concepts: quantum-based
+          execution, yielding, progress tracking, and termination detection.
+        </p>
+
+        <div class="explanation-box">
+          <h4>Coroutine Execution Pattern</h4>
+          <p>Every coroutine follows this standardized execution pattern:</p>
+          <ol>
+            <li>
+              <strong>Completion Check:</strong> Verify if the coroutine has
+              finished its work
+            </li>
+            <li>
+              <strong>Work Execution:</strong> Perform the main task (print
+              number/letter)
+            </li>
+            <li>
+              <strong>Progress Update:</strong> Increment internal counter
+            </li>
+            <li>
+              <strong>Quantum Management:</strong> Decrement quantum counter and
+              check for yield
+            </li>
+            <li>
+              <strong>Conditional Yield:</strong> Transfer control to scheduler
+              if quantum expires
+            </li>
+            <li>
+              <strong>Loop Continuation:</strong> Return to step 1 if still
+              running
+            </li>
+          </ol>
+        </div>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <h4>func1 Implementation (Numbers 1-9):</h4>
+            <div class="asm-codeblock">
+              <span class="asm-label">func1:</span>
+              <span class="asm-comment"># Check if work is complete</span>
+              <span class="asm-instruction">movl counter1(%rip), %eax</span>
+              <span class="asm-instruction">cmpl $10, %eax</span>
+              <span class="asm-instruction">jge func1_done</span>
+
+              <span class="asm-comment"># Print current number</span>
+              <span class="asm-instruction">call print_number</span>
+
+              <span class="asm-comment"># Increment counter</span>
+              <span class="asm-instruction">incl counter1(%rip)</span>
+
+              <span class="asm-comment"># Decrement quantum</span>
+              <span class="asm-instruction">decl quantum(%rip)</span>
+              <span class="asm-instruction">jz yield_to_scheduler</span>
+
+              <span class="asm-comment"># Continue if quantum remains</span>
+              <span class="asm-instruction">jmp func1</span>
+
+              <span class="asm-label">func1_done:</span>
+              <span class="asm-instruction">movl $1, done1(%rip)</span>
+              <span class="asm-instruction">jmp yield_to_scheduler</span>
+            </div>
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">func1 Execution Flow</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                func1 starts/resumes
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">2</div>
+                counter1 >= 10?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Yes</div>
+                  <div class="flow-process">
+                    <div class="step-number">3a</div>
+                    Set done1 = 1
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-terminator">
+                    <div class="step-number">4a</div>
+                    Yield to scheduler
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">No</div>
+                  <div class="flow-process">
+                    <div class="step-number">3b</div>
+                    Print number
+                  </div>
+                  <div class="flow-arrow">↓</div>
+                  <div class="flow-process">
+                    <div class="step-number">4b</div>
+                    counter1++
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-arrow">↓</div>
+              <div class="flow-decision">
+                <div class="step-number">5</div>
+                quantum == 0?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Yes</div>
+                  <div class="flow-terminator">
+                    <div class="step-number">6a</div>
+                    Yield to scheduler
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">No</div>
+                  <div class="flow-process">
+                    <div class="step-number">6b</div>
+                    Loop back to step 1
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <h4>func2 Implementation (Letters 'a'-'j'):</h4>
+            <div class="info-box">
+              <h4>Key Differences from func1</h4>
+              <ul>
+                <li>
+                  <strong>Character Output:</strong> Prints ASCII characters
+                  instead of numbers
+                </li>
+                <li>
+                  <strong>Different Counter:</strong> Uses counter2 and done2
+                  flags
+                </li>
+                <li>
+                  <strong>Same Structure:</strong> Identical execution pattern
+                  for consistency
+                </li>
+                <li>
+                  <strong>ASCII Conversion:</strong> Adds 'a' (97) to counter
+                  for character output
+                </li>
+              </ul>
+            </div>
+
+            <p>
+              The structural similarity between func1 and func2 demonstrates the
+              standardized coroutine pattern. This consistency makes the
+              scheduler's job simpler and ensures predictable behavior.
+            </p>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-label">func2:</span>
+            <span class="asm-comment"># Check if work is complete</span>
+            <span class="asm-instruction">movl counter2(%rip), %eax</span>
+            <span class="asm-instruction">cmpl $11, %eax</span>
+            <span class="asm-instruction">jge func2_done</span>
+
+            <span class="asm-comment"># Print current letter</span>
+            <span class="asm-instruction">call print_letter</span>
+
+            <span class="asm-comment"># Increment counter</span>
+            <span class="asm-instruction">incl counter2(%rip)</span>
+
+            <span class="asm-comment"># Decrement quantum</span>
+            <span class="asm-instruction">decl quantum(%rip)</span>
+            <span class="asm-instruction">jz yield_to_scheduler</span>
+
+            <span class="asm-comment"># Continue if quantum remains</span>
+            <span class="asm-instruction">jmp func2</span>
+
+            <span class="asm-label">func2_done:</span>
+            <span class="asm-instruction">movl $1, done2(%rip)</span>
+            <span class="asm-instruction">jmp yield_to_scheduler</span>
+          </div>
+        </div>
+
+        <h3>The Critical Role of call yield</h3>
+
+        <p>
+          The <code>call yield</code> instruction is the heart of cooperative
+          multitasking. Unlike a simple jump, the call instruction automatically
+          pushes the return address (RIP) onto the stack, which becomes crucial
+          for resuming execution at exactly the right point.
+        </p>
+
+        <div class="explanation-box">
+          <h4>Why call yield is Essential</h4>
+          <ul>
+            <li>
+              <strong>Return Address Preservation:</strong> The call instruction
+              automatically saves where to resume
+            </li>
+            <li>
+              <strong>Stack Consistency:</strong> Maintains proper stack frame
+              structure
+            </li>
+            <li>
+              <strong>Seamless Resumption:</strong> When restored, the coroutine
+              continues naturally
+            </li>
+            <li>
+              <strong>Hardware Support:</strong> Leverages CPU's built-in
+              call/return mechanism
+            </li>
+          </ul>
+          <p>
+            <em
+              >When the coroutine is restored, it continues execution right
+              after the call yield instruction, making the yield completely
+              transparent to the coroutine logic.</em
+            >
+          </p>
+        </div>
+
+        <h2>Context Switching: The Core Mechanism</h2>
+
+        <h3>The yield_to_scheduler Function</h3>
+
+        <p>
+          Context switching is where the magic happens. The yield_to_scheduler
+          function performs the complex task of saving the current coroutine's
+          complete state and restoring the scheduler's state, enabling seamless
+          transitions between execution contexts.
+        </p>
+
+        <div class="side-by-side">
+          <div class="left-content">
+            <div class="info-box">
+              <h4>Context Switch Steps</h4>
+              <ol>
+                <li>
+                  <strong>Register Preservation:</strong> Save all CPU registers
+                  to current CCB
+                </li>
+                <li>
+                  <strong>Stack Pointer Save:</strong> Store current stack
+                  position
+                </li>
+                <li>
+                  <strong>Flags Preservation:</strong> Save processor flags
+                  state
+                </li>
+                <li>
+                  <strong>CCB Update:</strong> Switch current_ccb pointer to
+                  scheduler
+                </li>
+                <li>
+                  <strong>Register Restoration:</strong> Load scheduler's
+                  registers
+                </li>
+                <li>
+                  <strong>Stack Switch:</strong> Change to scheduler's stack
+                </li>
+                <li>
+                  <strong>Flags Restoration:</strong> Restore scheduler's flags
+                </li>
+                <li>
+                  <strong>Execution Transfer:</strong> Jump to scheduler code
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="asm-codeblock">
+            <span class="asm-label">yield_to_scheduler:</span>
+            <span class="asm-comment"># Save current coroutine context</span>
+            <span class="asm-instruction">movq current_ccb(%rip), %r11</span>
+
+            <span class="asm-comment"># Save general purpose registers</span>
+            <span class="asm-instruction">movq %rbx, 0(%r11)</span>
+            <span class="asm-instruction">movq %rsp, 8(%r11)</span>
+            <span class="asm-instruction">movq %rbp, 16(%r11)</span>
+            <span class="asm-instruction">movq %r12, 24(%r11)</span>
+            <span class="asm-instruction">movq %r13, 32(%r11)</span>
+            <span class="asm-instruction">movq %r14, 40(%r11)</span>
+            <span class="asm-instruction">movq %r15, 48(%r11)</span>
+
+            <span class="asm-comment"># Save processor flags</span>
+            <span class="asm-instruction">pushfq</span>
+            <span class="asm-instruction">popq %rax</span>
+            <span class="asm-instruction">movq %rax, 56(%r11)</span>
+
+            <span class="asm-comment"># Switch to scheduler</span>
+            <span class="asm-instruction">leaq ccb_scheduler(%rip), %rax</span>
+            <span class="asm-instruction">movq %rax, current_ccb(%rip)</span>
+
+            <span class="asm-comment"># Restore scheduler context</span>
+            <span class="asm-instruction">movq 0(%rax), %rbx</span>
+            <span class="asm-instruction">movq 8(%rax), %rsp</span>
+            <span class="asm-instruction">movq 16(%rax), %rbp</span>
+            <span class="asm-instruction">movq 24(%rax), %r12</span>
+            <span class="asm-instruction">movq 32(%rax), %r13</span>
+            <span class="asm-instruction">movq 40(%rax), %r14</span>
+            <span class="asm-instruction">movq 48(%rax), %r15</span>
+
+            <span class="asm-comment"># Restore flags and jump</span>
+            <span class="asm-instruction">movq 56(%rax), %rax</span>
+            <span class="asm-instruction">pushq %rax</span>
+            <span class="asm-instruction">popfq</span>
+
+            <span class="asm-comment"># Return to scheduler</span>
+            <span class="asm-instruction">ret</span>
+          </div>
+        </div>
+
+        <h3>The Scheduler Implementation</h3>
+
+        <p>
+          The scheduler is the control center that decides which coroutine runs
+          next. It implements a simple round-robin algorithm while managing
+          quantum counters and termination detection.
+        </p>
+
+        <div class="flowchart-container">
+          <div class="code-half">
+            <div class="asm-codeblock">
+              <span class="asm-label">scheduler:</span>
+              <span class="asm-comment"
+                ># Check if all coroutines are done</span
+              >
+              <span class="asm-instruction">movl done1(%rip), %eax</span>
+              <span class="asm-instruction">movl done2(%rip), %ebx</span>
+              <span class="asm-instruction">addl %ebx, %eax</span>
+              <span class="asm-instruction">cmpl $2, %eax</span>
+              <span class="asm-instruction">je program_exit</span>
+
+              <span class="asm-comment"
+                ># Reset quantum for next coroutine</span
+              >
+              <span class="asm-instruction">movl $4, quantum(%rip)</span>
+
+              <span class="asm-comment"># Simple round-robin selection</span>
+              <span class="asm-instruction"
+                >movl last_scheduled(%rip), %eax</span
+              >
+              <span class="asm-instruction">cmpl $1, %eax</span>
+              <span class="asm-instruction">je schedule_coroutine2</span>
+
+              <span class="asm-label">schedule_coroutine1:</span>
+              <span class="asm-instruction">movl done1(%rip), %eax</span>
+              <span class="asm-instruction">testl %eax, %eax</span>
+              <span class="asm-instruction">jnz schedule_coroutine2</span>
+
+              <span class="asm-instruction">movl $1, last_scheduled(%rip)</span>
+              <span class="asm-instruction">jmp switch_to_coroutine1</span>
+
+              <span class="asm-label">schedule_coroutine2:</span>
+              <span class="asm-instruction">movl done2(%rip), %eax</span>
+              <span class="asm-instruction">testl %eax, %eax</span>
+              <span class="asm-instruction">jnz schedule_coroutine1</span>
+
+              <span class="asm-instruction">movl $2, last_scheduled(%rip)</span>
+              <span class="asm-instruction">jmp switch_to_coroutine2</span>
+            </div>
+          </div>
+
+          <div class="flowchart-half">
+            <div class="flowchart">
+              <div class="flowchart-title">Scheduler Decision Logic</div>
+
+              <div class="flow-step">
+                <div class="step-number">1</div>
+                Scheduler activated
+              </div>
+              <div class="flow-arrow">↓</div>
+
+              <div class="flow-decision">
+                <div class="step-number">2</div>
+                done1 + done2 == 2?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Yes</div>
+                  <div class="flow-terminator">
+                    <div class="step-number">3a</div>
+                    Exit program
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">No</div>
+                  <div class="flow-process">
+                    <div class="step-number">3b</div>
+                    Reset quantum = 4
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-arrow">↓</div>
+              <div class="flow-decision">
+                <div class="step-number">4</div>
+                last_scheduled == 1?
+              </div>
+
+              <div class="flow-split">
+                <div class="flow-branch">
+                  <div class="branch-label">Yes</div>
+                  <div class="flow-decision">
+                    <div class="step-number">5a</div>
+                    done2 == 0?
+                  </div>
+                  <div class="flow-split">
+                    <div class="flow-branch">
+                      <div class="branch-label">Yes</div>
+                      <div class="flow-process">
+                        <div class="step-number">6a</div>
+                        Switch to func2
+                      </div>
+                    </div>
+                    <div class="flow-branch">
+                      <div class="branch-label">No</div>
+                      <div class="flow-process">
+                        <div class="step-number">6b</div>
+                        Switch to func1
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flow-branch">
+                  <div class="branch-label">No</div>
+                  <div class="flow-decision">
+                    <div class="step-number">5b</div>
+                    done1 == 0?
+                  </div>
+                  <div class="flow-split">
+                    <div class="flow-branch">
+                      <div class="branch-label">Yes</div>
+                      <div class="flow-process">
+                        <div class="step-number">6c</div>
+                        Switch to func1
+                      </div>
+                    </div>
+                    <div class="flow-branch">
+                      <div class="branch-label">No</div>
+                      <div class="flow-process">
+                        <div class="step-number">6d</div>
+                        Switch to func2
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2>Enhanced Interactive System Architecture</h2>
+
+        <div class="advanced-uml-diagram">
+          <div class="uml-layer">
+            <div class="uml-component scheduler">
+              <div class="uml-header">
+                <span class="uml-icon">🎯</span>
+                <span class="uml-title">SCHEDULER CONTROLLER</span>
+              </div>
+              <ul class="uml-methods">
+                <li>initialize_system()</li>
+                <li>round_robin_select()</li>
+                <li>check_all_terminated()</li>
+                <li>reset_quantum_counter()</li>
+                <li>dispatch_next_coroutine()</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="uml-layer" style="display: flex; gap: 20px">
+            <div class="uml-component coroutine" style="flex: 1">
+              <div class="uml-header">
+                <span class="uml-icon">⚙️</span>
+                <span class="uml-title">COROUTINE_1</span>
+              </div>
+              <ul class="uml-methods">
+                <li>counter1: int = 1</li>
+                <li>done1: boolean = false</li>
+                <li>func1(): void</li>
+                <li>print_number(counter1)</li>
+                <li>increment_progress()</li>
+                <li>check_completion()</li>
+                <li>yield_control()</li>
+              </ul>
+            </div>
+
+            <div class="uml-component coroutine" style="flex: 1">
+              <div class="uml-header">
+                <span class="uml-icon">🔤</span>
+                <span class="uml-title">COROUTINE_2</span>
+              </div>
+              <ul class="uml-methods">
+                <li>counter2: int = 1</li>
+                <li>done2: boolean = false</li>
+                <li>func2(): void</li>
+                <li>print_letter(counter2)</li>
+                <li>increment_progress()</li>
+                <li>check_completion()</li>
+                <li>yield_control()</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="uml-layer" style="display: flex; gap: 20px">
+            <div class="uml-component memory" style="flex: 1">
+              <div class="uml-header">
+                <span class="uml-icon">💾</span>
+                <span class="uml-title">CCB_MANAGER</span>
+              </div>
+              <ul class="uml-methods">
+                <li>ccb_scheduler[128 bytes]</li>
+                <li>ccb_coroutine1[128 bytes]</li>
+                <li>ccb_coroutine2[128 bytes]</li>
+                <li>current_ccb: pointer</li>
+                <li>quantum: int = 4</li>
+                <li>last_scheduled: int</li>
+              </ul>
+            </div>
+
+            <div class="uml-component context" style="flex: 1">
+              <div class="uml-header">
+                <span class="uml-icon">🔄</span>
+                <span class="uml-title">CONTEXT_SWITCHER</span>
+              </div>
+              <ul class="uml-methods">
+                <li>save_registers(ccb*)</li>
+                <li>restore_registers(ccb*)</li>
+                <li>save_stack_pointer()</li>
+                <li>restore_stack_pointer()</li>
+                <li>save_processor_flags()</li>
+                <li>yield_to_scheduler()</li>
+                <li>switch_to_coroutine(id)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="uml-relationships">
+            <div class="uml-arrow" style="top: 25%; left: 48%">⬇️</div>
+            <div class="uml-arrow" style="top: 45%; left: 25%">⬅️</div>
+            <div class="uml-arrow" style="top: 45%; right: 25%">➡️</div>
+            <div class="uml-arrow" style="top: 65%; left: 48%">⬇️</div>
+            <div class="uml-arrow" style="bottom: 15%; left: 48%">⬆️</div>
+          </div>
+        </div>
+
+        <h2>Classic UML Class Diagram</h2>
+
+        <div class="classic-uml-container">
+          <!-- Scheduler Class Wrapper -->
+          <div class="uml-class-wrapper scheduler-wrapper">
+            <div class="uml-class scheduler-class">
+              <div class="uml-class-header">Scheduler</div>
+              <div class="uml-attributes">
+                <h4>Attributes</h4>
+                <div class="uml-attribute private">current_ccb: CCB*</div>
+                <div class="uml-attribute private">last_scheduled: int</div>
+                <div class="uml-attribute private">quantum: int</div>
+              </div>
+              <div class="uml-methods">
+                <h4>Operations</h4>
+                <div class="uml-method public">initialize(): void</div>
+                <div class="uml-method public">schedule(): void</div>
+                <div class="uml-method public">round_robin_select(): Coroutine*</div>
+                <div class="uml-method private">dispatch(coroutine: Coroutine*): void</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coroutine1 Class Wrapper -->
+          <div class="uml-class-wrapper coroutine1-wrapper">
+            <div class="uml-class coroutine1-class">
+              <div class="uml-class-header">Coroutine1</div>
+              <div class="uml-attributes">
+                <h4>Attributes</h4>
+                <div class="uml-attribute private">counter1: int</div>
+                <div class="uml-attribute private">done1: boolean</div>
+                <div class="uml-attribute private">ccb: CCB</div>
+              </div>
+              <div class="uml-methods">
+                <h4>Operations</h4>
+                <div class="uml-method public">func1(): void</div>
+                <div class="uml-method public">yield(): void</div>
+                <div class="uml-method private">print_number(): void</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coroutine2 Class Wrapper -->
+          <div class="uml-class-wrapper coroutine2-wrapper">
+            <div class="uml-class coroutine2-class">
+              <div class="uml-class-header">Coroutine2</div>
+              <div class="uml-attributes">
+                <h4>Attributes</h4>
+                <div class="uml-attribute private">counter2: int</div>
+                <div class="uml-attribute private">done2: boolean</div>
+                <div class="uml-attribute private">ccb: CCB</div>
+              </div>
+              <div class="uml-methods">
+                <h4>Operations</h4>
+                <div class="uml-method public">func2(): void</div>
+                <div class="uml-method public">yield(): void</div>
+                <div class="uml-method private">print_letter(): void</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CCBManager Class Wrapper -->
+          <div class="uml-class-wrapper ccb-manager-wrapper">
+            <div class="uml-class ccb-manager-class">
+              <div class="uml-class-header">CCBManager</div>
+              <div class="uml-attributes">
+                <h4>Attributes</h4>
+                <div class="uml-attribute private">ccb_scheduler[128]: byte</div>
+                <div class="uml-attribute private">ccb_coroutine1[128]: byte</div>
+                <div class="uml-attribute private">ccb_coroutine2[128]: byte</div>
+              </div>
+              <div class="uml-methods">
+                <h4>Operations</h4>
+                <div class="uml-method public">get_ccb(id: int): CCB*</div>
+                <div class="uml-method public">initialize_ccbs(): void</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ContextSwitcher Class Wrapper -->
+          <div class="uml-class-wrapper context-switcher-wrapper">
+            <div class="uml-class context-switcher-class">
+              <div class="uml-class-header">ContextSwitcher</div>
+              <div class="uml-attributes">
+                <h4>Attributes</h4>
+                <div class="uml-attribute private">register_buffer[16]: uint64</div>
+              </div>
+              <div class="uml-methods">
+                <h4>Operations</h4>
+                <div class="uml-method public">save_context(ccb: CCB*): void</div>
+                <div class="uml-method public">restore_context(ccb: CCB*): void</div>
+                <div class="uml-method public">yield_to_scheduler(): void</div>
+                <div class="uml-method private">switch_stack(new_rsp: uint64): void</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BULLETPROOF UML ARROWS - FINAL SOLUTION -->
+          
+          <!-- Scheduler to ContextSwitcher - Dependency (dashed L-shaped) -->
+          <div class="scheduler-to-context-final">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+            <div class="arrow"></div>
+          </div>
+
+          <!-- CCBManager to ContextSwitcher - Association (solid horizontal) -->
+          <div class="ccb-to-context-final">
+            <div class="line1"></div>
+            <div class="arrow"></div>
+          </div>
+          
+          <!-- Labels -->
+          <div class="scheduler-label-final"><<uses>></div>
+          <div class="ccb-label-final">accesses</div>
+          
+          <!-- Multiplicities -->
+          <div class="multiplicity-1-final">1</div>
+          <div class="multiplicity-2-final">1</div>
+          <div class="multiplicity-3-final">1</div>
+          <div class="multiplicity-4-final">1</div>
+        </div>
+
+        <div class="explanation-box">
+          <h4>UML Diagram Legend</h4>
+          <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+            <div>
+              <strong>Relationship Types:</strong>
+              <ul>
+                <li><strong>Composition (♦):</strong> Strong ownership (filled diamond)</li>
+                <li><strong>Association (→):</strong> Uses or communicates with</li>
+                <li><strong>Dependency (⇢):</strong> Temporary usage (dashed line)</li>
+              </ul>
+            </div>
+            <div>
+              <strong>Visibility:</strong>
+              <ul>
+                <li><strong>+ Public:</strong> Accessible from outside</li>
+                <li><strong>- Private:</strong> Internal to class only</li>
+                <li><strong># Protected:</strong> Accessible to subclasses</li>
+              </ul>
+            </div>
+            <div>
+              <strong>Multiplicities:</strong>
+              <ul>
+                <li><strong>1:</strong> Exactly one instance</li>
+                <li><strong>*:</strong> Zero or more instances</li>
+                <li><strong>1..*:</strong> One or more instances</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h2>CPU Register Visualization During Context Switch</h2>
+
+        <div class="component-box">
+          <div class="component-header">
+            <span class="component-icon">🖥️</span>
+            <div>
+              <div class="component-title">x86-64 Register Bank</div>
+              <div class="component-subtitle">
+                Current state during coroutine execution
+              </div>
+            </div>
+          </div>
+
+          <div class="register-bank">
+            <div class="register">
+              <span class="register-name">RAX</span>
+              <span class="register-value">0x0000000A</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RBX</span>
+              <span class="register-value">0x12345678</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RCX</span>
+              <span class="register-value">0x00000004</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RDX</span>
+              <span class="register-value">0xFFFFFFFF</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RSI</span>
+              <span class="register-value">0x7FFF1234</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RDI</span>
+              <span class="register-value">0x7FFF5678</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RSP</span>
+              <span class="register-value">0x7FFF9ABC</span>
+            </div>
+            <div class="register">
+              <span class="register-name">RBP</span>
+              <span class="register-value">0x7FFFDEF0</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R8</span>
+              <span class="register-value">0x00000000</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R9</span>
+              <span class="register-value">0x00000000</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R10</span>
+              <span class="register-value">0x00000000</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R11</span>
+              <span class="register-value">0x00000000</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R12</span>
+              <span class="register-value">0xABCDEF12</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R13</span>
+              <span class="register-value">0x34567890</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R14</span>
+              <span class="register-value">0xFEDCBA98</span>
+            </div>
+            <div class="register">
+              <span class="register-name">R15</span>
+              <span class="register-value">0x13579BDF</span>
+            </div>
+          </div>
+
+          <div class="explanation-box" style="margin-top: 20px">
+            <h4>Register State Preservation</h4>
+            <p>
+              During context switching, all these register values are saved to
+              the current coroutine's CCB and then restored from the target
+              coroutine's CCB. This ensures that when a coroutine resumes, it
+              has exactly the same CPU state as when it yielded.
+            </p>
+          </div>
+        </div>
+
+        <h2>Memory Layout and Stack Management</h2>
+
+        <div class="component-box">
+          <div class="component-header">
+            <span class="component-icon">🧠</span>
+            <div>
+              <div class="component-title">Coroutine Memory Architecture</div>
+              <div class="component-subtitle">
+                Isolated stack spaces and shared data
+              </div>
+            </div>
+          </div>
+
+          <div class="memory-layout">
+            <div class="memory-section text">
+              <div class="memory-address">0x400000</div>
+              <div class="memory-content">
+                TEXT SEGMENT - Program Code (func1, func2, scheduler)
+              </div>
+            </div>
+            <div class="memory-section data">
+              <div class="memory-address">0x600000</div>
+              <div class="memory-content">
+                DATA SEGMENT - CCBs, Global Variables, Counters
+              </div>
+            </div>
+            <div class="memory-section stack">
+              <div class="memory-address">0x7FFF0000</div>
+              <div class="memory-content">
+                STACK 1 - Coroutine 1 Private Stack (4KB)
+              </div>
+            </div>
+            <div class="memory-section stack">
+              <div class="memory-address">0x7FFF1000</div>
+              <div class="memory-content">
+                STACK 2 - Coroutine 2 Private Stack (4KB)
+              </div>
+            </div>
+            <div class="memory-section heap">
+              <div class="memory-address">0x7FFF2000</div>
+              <div class="memory-content">
+                SCHEDULER STACK - Scheduler Private Stack
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box" style="margin-top: 20px">
+            <h4>Key Memory Isolation Features</h4>
+            <ul>
+              <li>
+                <strong>Separate Stacks:</strong> Each coroutine has its own 4KB
+                stack space
+              </li>
+              <li>
+                <strong>Shared Data Segment:</strong> CCBs and global variables
+                accessible to all
+              </li>
+              <li>
+                <strong>Stack Protection:</strong> RSP switching prevents stack
+                corruption
+              </li>
+              <li>
+                <strong>Address Space Layout:</strong> Predictable memory
+                organization
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <h2>Quantum-Based Execution Control</h2>
+
+        <div class="component-box">
+          <div class="component-header">
+            <span class="component-icon">⏱️</span>
+            <div>
+              <div class="component-title">Quantum Management System</div>
+              <div class="component-subtitle">
+                Fair time-sharing between coroutines
+              </div>
+            </div>
+          </div>
+
+          <div class="quantum-meter">
+            <h4 style="color: white; margin-top: 0">Current Quantum State</h4>
+            <div class="quantum-display">
+              <div class="quantum-bar">
+                <div class="quantum-fill"></div>
+                <div class="quantum-text">3/4 Instructions Remaining</div>
+              </div>
+            </div>
+            <p style="color: #bdc3c7; font-size: 0.9em; margin-bottom: 0">
+              Each coroutine gets 4 instructions per quantum. When quantum
+              expires, automatic yield occurs.
+            </p>
+          </div>
+
+          <div class="context-switch-demo">
+            <h4 style="margin-top: 0; color: #2c3e50">
+              Context Switch Animation Steps
+            </h4>
+
+            <div class="context-switch-step">
+              <div class="step-icon">💾</div>
+              <div class="step-content">
+                <div class="step-title">1. Save Current State</div>
+                <div class="step-description">
+                  All CPU registers, stack pointer, and flags saved to current
+                  CCB
+                </div>
+              </div>
+            </div>
+
+            <div class="context-switch-step">
+              <div class="step-icon">🔄</div>
+              <div class="step-content">
+                <div class="step-title">2. Update CCB Pointer</div>
+                <div class="step-description">
+                  current_ccb switched to point to scheduler's CCB
+                </div>
+              </div>
+            </div>
+
+            <div class="context-switch-step">
+              <div class="step-icon">⚡</div>
+              <div class="step-content">
+                <div class="step-title">3. Restore Scheduler</div>
+                <div class="step-description">
+                  Scheduler's registers and stack pointer restored from CCB
+                </div>
+              </div>
+            </div>
+
+            <div class="context-switch-step">
+              <div class="step-icon">🎯</div>
+              <div class="step-content">
+                <div class="step-title">4. Make Decision</div>
+                <div class="step-description">
+                  Scheduler selects next coroutine using round-robin algorithm
+                </div>
+              </div>
+            </div>
+
+            <div class="context-switch-step">
+              <div class="step-icon">🚀</div>
+              <div class="step-content">
+                <div class="step-title">5. Launch Coroutine</div>
+                <div class="step-description">
+                  Target coroutine's state restored and execution resumed
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2>Assembly Instruction Analysis</h2>
+
+        <div class="component-box">
+          <div class="component-header">
+            <span class="component-icon">🔧</span>
+            <div>
+              <div class="component-title">Critical Assembly Operations</div>
+              <div class="component-subtitle">
+                Detailed breakdown of context switching instructions
+              </div>
+            </div>
+          </div>
+
+          <div class="instruction-breakdown">
+            <h4 style="color: white; margin-top: 0">Context Save Sequence</h4>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">MOVQ</div>
+              <div class="instruction-operands">%rbx, 0(%r11)</div>
+              <div class="instruction-description">
+                Save RBX register to CCB offset 0
+              </div>
+            </div>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">MOVQ</div>
+              <div class="instruction-operands">%rsp, 8(%r11)</div>
+              <div class="instruction-description">
+                Save stack pointer to CCB offset 8
+              </div>
+            </div>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">PUSHFQ</div>
+              <div class="instruction-operands">-</div>
+              <div class="instruction-description">
+                Push processor flags onto stack
+              </div>
+            </div>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">POPQ</div>
+              <div class="instruction-operands">%rax</div>
+              <div class="instruction-description">
+                Pop flags into RAX for storage
+              </div>
+            </div>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">MOVQ</div>
+              <div class="instruction-operands">%rax, 56(%r11)</div>
+              <div class="instruction-description">
+                Save flags to CCB offset 56
+              </div>
+            </div>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">LEAQ</div>
+              <div class="instruction-operands">ccb_scheduler(%rip), %rax</div>
+              <div class="instruction-description">
+                Load scheduler CCB address
+              </div>
+            </div>
+
+            <div class="instruction-line">
+              <div class="instruction-opcode">MOVQ</div>
+              <div class="instruction-operands">%rax, current_ccb(%rip)</div>
+              <div class="instruction-description">
+                Update current CCB pointer
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

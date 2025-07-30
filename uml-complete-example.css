@@ -1,0 +1,221 @@
+/* Complete UML Diagram Example - Shows how to create a beautiful, full UML diagram */
+
+/* Import all UML system files */
+@import url("./uml-variables.css");
+@import url("./uml-layout-config.css");
+@import url("./uml-wrappers.css");
+@import url("./uml-components.css");
+@import url("./uml-relationships.css");
+@import url("./uml-connections.css");
+@import url("./uml-decorations.css");
+
+/* === EXAMPLE USAGE IN HTML === */
+
+/*
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful UML Diagram</title>
+    <link rel="stylesheet" href="uml-complete-example.css">
+</head>
+<body>
+    <div class="classic-uml-container">
+        
+        <!-- Package Layer (Optional grouping) -->
+        <div class="uml-package" data-package-name="Coroutine System" 
+             style="left: 10px; top: 10px; width: calc(100% - 20px); height: calc(100% - 20px);">
+        </div>
+        
+        <!-- Scheduler Component -->
+        <div class="uml-wrapper" data-component="scheduler">
+            <div class="uml-class-generic scheduler-theme">
+                <div class="uml-stereotype interface">«singleton»</div>
+                <div class="uml-header-generic">Scheduler</div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Attributes</h4>
+                    <div class="uml-item-generic private">currentCoroutine: Coroutine*</div>
+                    <div class="uml-item-generic private">readyQueue: Queue&lt;Coroutine*&gt;</div>
+                    <div class="uml-item-generic private">quantum: int</div>
+                </div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Methods</h4>
+                    <div class="uml-item-generic public">schedule(): void</div>
+                    <div class="uml-item-generic public">yield(): void</div>
+                    <div class="uml-item-generic public">addCoroutine(cor: Coroutine*): void</div>
+                    <div class="uml-item-generic private">switchContext(): void</div>
+                </div>
+                <div class="uml-active-indicator"></div>
+            </div>
+        </div>
+        
+        <!-- Coroutine 1 -->
+        <div class="uml-wrapper" data-component="coroutine1">
+            <div class="uml-class-generic coroutine-theme">
+                <div class="uml-stereotype">«active»</div>
+                <div class="uml-header-generic">Coroutine</div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Attributes</h4>
+                    <div class="uml-item-generic private">stack: void*</div>
+                    <div class="uml-item-generic private">state: CoroutineState</div>
+                    <div class="uml-item-generic private">id: int</div>
+                </div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Methods</h4>
+                    <div class="uml-item-generic public">run(): void</div>
+                    <div class="uml-item-generic public">yield(): void</div>
+                    <div class="uml-item-generic public">resume(): void</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coroutine 2 -->
+        <div class="uml-wrapper" data-component="coroutine2">
+            <div class="uml-class-generic coroutine-theme">
+                <div class="uml-stereotype">«active»</div>
+                <div class="uml-header-generic">Coroutine</div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Attributes</h4>
+                    <div class="uml-item-generic private">stack: void*</div>
+                    <div class="uml-item-generic private">state: CoroutineState</div>
+                    <div class="uml-item-generic private">id: int</div>
+                </div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Methods</h4>
+                    <div class="uml-item-generic public">run(): void</div>
+                    <div class="uml-item-generic public">yield(): void</div>
+                    <div class="uml-item-generic public">resume(): void</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Context Switcher -->
+        <div class="uml-wrapper" data-component="context-switcher">
+            <div class="uml-class-generic context-theme">
+                <div class="uml-stereotype utility">«utility»</div>
+                <div class="uml-header-generic">ContextSwitcher</div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Methods</h4>
+                    <div class="uml-item-generic public">switchTo(newCoroutine: Coroutine*): void</div>
+                    <div class="uml-item-generic public">saveContext(cor: Coroutine*): void</div>
+                    <div class="uml-item-generic public">restoreContext(cor: Coroutine*): void</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CCB Manager -->
+        <div class="uml-wrapper" data-component="ccb-manager">
+            <div class="uml-class-generic memory-theme">
+                <div class="uml-stereotype">«manager»</div>
+                <div class="uml-header-generic">CCBManager</div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Attributes</h4>
+                    <div class="uml-item-generic private">ccbPool: CCB[]</div>
+                    <div class="uml-item-generic private">allocatedCCBs: Set&lt;CCB*&gt;</div>
+                </div>
+                <div class="uml-section-generic">
+                    <h4 class="uml-section-title">Methods</h4>
+                    <div class="uml-item-generic public">allocateCCB(): CCB*</div>
+                    <div class="uml-item-generic public">deallocateCCB(ccb: CCB*): void</div>
+                    <div class="uml-item-generic private">initializeCCB(ccb: CCB*): void</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RELATIONSHIPS -->
+        
+        <!-- Scheduler manages Coroutines (Composition) -->
+        <div class="uml-relationship composition scheduler-to-coroutine1">
+            <div class="uml-line vertical" style="--x: calc(var(--scheduler-x) + 125px); --y: calc(var(--scheduler-y) + 200px); --line-length: 100px;"></div>
+            <div class="uml-arrow-head diamond" style="left: calc(var(--scheduler-x) + 120px); top: calc(var(--scheduler-y) + 195px);"></div>
+            <div class="uml-multiplicity" style="left: calc(var(--scheduler-x) + 140px); top: calc(var(--scheduler-y) + 205px);">1..*</div>
+            <div class="uml-relationship-label" style="left: calc(var(--scheduler-x) + 160px); top: calc(var(--scheduler-y) + 250px);">manages</div>
+        </div>
+        
+        <!-- Scheduler to Coroutine2 (Composition) -->
+        <div class="uml-relationship composition scheduler-to-coroutine2">
+            <div class="uml-line diagonal" style="--x: calc(var(--scheduler-x) + 125px); --y: calc(var(--scheduler-y) + 200px); --line-length: 200px; --angle: 25deg;"></div>
+            <div class="uml-arrow-head diamond" style="left: calc(var(--scheduler-x) + 120px); top: calc(var(--scheduler-y) + 195px);"></div>
+        </div>
+        
+        <!-- Coroutines use Context Switcher (Dependency) -->
+        <div class="uml-relationship dependency coroutine1-to-context">
+            <div class="uml-line vertical" style="--x: calc(var(--coroutine1-x) + 125px); --y: calc(var(--coroutine1-y) + 200px); --line-length: 400px;"></div>
+            <div class="uml-arrow-head open" style="left: calc(var(--coroutine1-x) + 117px); top: calc(var(--context-switcher-y) - 8px);"></div>
+            <div class="uml-relationship-label" style="left: calc(var(--coroutine1-x) + 140px); top: calc(var(--coroutine1-y) + 350px);">«uses»</div>
+        </div>
+        
+        <!-- CCB Manager to Context Switcher (Association) -->
+        <div class="uml-relationship association ccb-to-context">
+            <div class="uml-line horizontal" style="--x: calc(var(--ccb-manager-x) + 250px); --y: calc(var(--ccb-manager-y) + 100px); --line-length: 100px;"></div>
+            <div class="uml-arrow-head open" style="left: calc(var(--context-switcher-x) - 8px); top: calc(var(--ccb-manager-y) + 96px);"></div>
+            <div class="uml-relationship-label" style="left: calc(var(--ccb-manager-x) + 300px); top: calc(var(--ccb-manager-y) + 80px);">provides memory</div>
+        </div>
+        
+        <!-- ANNOTATIONS -->
+        
+        <!-- Note about scheduling -->
+        <div class="uml-note" style="left: calc(var(--scheduler-x) + 300px); top: calc(var(--scheduler-y) + 50px);">
+            Uses round-robin scheduling with time quantum of 10ms
+        </div>
+        <div class="uml-note-connector" style="left: calc(var(--scheduler-x) + 280px); top: calc(var(--scheduler-y) + 90px); height: 30px;"></div>
+        
+        <!-- Constraint on context switching -->
+        <div class="uml-constraint" style="left: calc(var(--context-switcher-x) + 50px); top: calc(var(--context-switcher-y) - 30px);">
+            atomic operation
+        </div>
+        
+        <!-- Visibility Legend -->
+        <div class="uml-visibility-legend">
+            <h4>Visibility</h4>
+            <div class="uml-visibility-item">
+                <span class="uml-visibility-symbol public">+</span>
+                <span>Public</span>
+            </div>
+            <div class="uml-visibility-item">
+                <span class="uml-visibility-symbol private">-</span>
+                <span>Private</span>
+            </div>
+            <div class="uml-visibility-item">
+                <span class="uml-visibility-symbol protected">#</span>
+                <span>Protected</span>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
+*/
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  /* Simplify diagram for mobile */
+  .uml-relationship,
+  .uml-note,
+  .uml-constraint,
+  .uml-package {
+    display: none;
+  }
+
+  .uml-visibility-legend {
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.6em;
+  }
+}
+
+/* === PRINT STYLES === */
+@media print {
+  .uml-active-indicator {
+    display: none;
+  }
+
+  .uml-relationship.animated {
+    animation: none;
+  }
+
+  body {
+    background: white;
+  }
+}
